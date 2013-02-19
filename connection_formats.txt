@@ -1,0 +1,23 @@
+// router-to-router channel
+// -----------------------------------------------------------------
+assign rx_data[r2][p2] = tx_data[r1][p1];
+assign tx_busy[r1][p1] = rx_busy[r2][p2];
+
+// source-to-router channel
+// -----------------------------------------------------------------
+assign rx_data[r1][p1] = source_data[0];
+assign ss1_busy = rx_busy[r1][p1];
+
+// router-to-sink channel
+// -----------------------------------------------------------------
+assign sink_data[0] = tx_data[r1][p1];
+assign tx_busy[r1][p1] = sink_busy[0];	
+
+// TX terminator
+// -----------------------------------------------------------------
+assign tx_busy[r1][p1] = 0;	
+
+// RX terminator
+// -----------------------------------------------------------------
+assign rx_data[r1][p1] = 0;	
+
