@@ -2,7 +2,7 @@
 
 This is an implementation of a simplistic but parametrizable Network-on-Chip with buffered sources, sinks and routers. The network was tested and functions correctly on Altera's DE1 and DE2 boards (using Altera Cyclone II 2C20 and Cyclone IV 4CE115 FPGAs respectively).
 
-Each router has a 5 serial-to-parallel converters, 5 parallel-to-serial, a fifo for storing packets and some switching logic. The project contains dummy sources and sinks that can inject/consume network traffic and perl scripts to generate verilog code from an abstract network description file (.arc).
+Each router has 5 serial-to-parallel converters, 5 parallel-to-serial, some switching logic and a fifo for storing packets. The project contains dummy sources and sinks that can inject/consume network traffic and perl scripts to generate verilog code from an abstract network description file (.arc).
 
 The implementation was used to develop the dynamic thermal-aware routing strategies proposed in [1].
 
