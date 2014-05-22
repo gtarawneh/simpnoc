@@ -10,7 +10,7 @@ The implementation was used to develop the dynamic thermal-aware routing strateg
 
 The diagram below shows a 4x4 network configuration for illustration. Routers have 5 duplex channel: east, west, north, south and local (not shown) and address/data lines to interface with an SRAM where their routing tables are stored.
 
-![Screenshot](https://raw.github.com/gtarawneh/simpnoc/master/diagrams/diagram1.svg "Example Topology")
+![Screenshot](https://raw.github.com/gtarawneh/simpnoc/master/diagrams/diagram1.png "Example Topology")
 
 #### References
 
