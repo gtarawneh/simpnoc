@@ -36,17 +36,19 @@ module counter(clk, reset, ena, count);
 endmodule 
 
 
-module generator(clk, reset);
+module generator(clk, reset, send);
+	parameter SIM_CYLES = 10000;
+	parameter COOLDOWN_CYCLES = 5000;
 
-	output clk, reset;
+	output clk, reset, send;
 	
-	reg clk, reset;
+	reg clk, reset, send;
 
 	initial 
 	begin 
 		clk = 0;
 		#0 reset = 1; 
-		#0.5 reset = 0;
+		#2 reset = 0;
 	end 
 	
 	always 
@@ -54,18 +56,27 @@ module generator(clk, reset);
 		#1 clk = !clk;
 	end
 	
-	initial $display("start of simulation ...");
+	initial $display("Start of simulation ...");
 	
 	  initial
          begin
-            $dumpfile("dump.vcd");
+            $dumpfile("dump1.vcd");
             $dumpvars(0,testbench);
          end
 
 	
 	initial     begin
-		#10000  $finish;
+		$display("Sending data ...");
+		send=1;
+		#(SIM_CYLES)
+		$display("Cooling down ...");
+		send=0;
+		#(COOLDOWN_CYCLES)
+		$display("End of simulation.");
+		$finish;
 	end
 
 
 endmodule
+
+
