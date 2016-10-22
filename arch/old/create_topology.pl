@@ -1,4 +1,4 @@
-#!/bin/parl
+#!/bin/perl
 
 $w=4;
 $h=4;
@@ -64,10 +64,10 @@ for ($i=0; $i<$h * $w; $i++)
 	#print "router $i local -> sink\n";
 	#print "router $i local <- source\n";
 
-	print "#source\n";
+	print "# source\n";
 	print "sr,$i,$i,4\n";
 
-	print "#sink\n";
+	print "# sink\n";
 	print "rs,$i,4,$i\n";
 
 }
