@@ -1,4 +1,4 @@
-`timescale 1ns/100ps
+`timescale 1ns/1ns
 
 `include "constants_2D.v"
 `include "basics.v"
@@ -12,17 +12,20 @@
 module testbench();
 
 	initial begin
-		$display("start of simulation ...");
+		// $display("%d : start of simulation", $time);
+		$display("start of stimulation");
 		$dumpfile("output/dump.vcd");
 		$dumpvars(0, testbench);
-		#100 $finish;
+		#1000
+		$display("end of stimulation");
+		$finish;
 	end
 
 	wire clk, reset;
 
 	generator g1 (clk, reset);
 
-	// routers:
+	// routers and routing tables:
 	// -----------------------------------------------------------------
 
 	wire [4:0] rx_busy [`NUM_NODES-1:0];
@@ -31,46 +34,16 @@ module testbench();
 	wire [4:0] tx_data [`NUM_NODES-1:0];
 	wire [2:0] activity_level [`NUM_NODES-1:0];
 
-	router #(0) router0 (clk, reset, rx_busy[0], rx_data[0], tx_busy[0], tx_data[0], table_addr[0], table_data[0], activity_level[0]);
-	router #(1) router1 (clk, reset, rx_busy[1], rx_data[1], tx_busy[1], tx_data[1], table_addr[1], table_data[1], activity_level[1]);
-	router #(2) router2 (clk, reset, rx_busy[2], rx_data[2], tx_busy[2], tx_data[2], table_addr[2], table_data[2], activity_level[2]);
-	router #(3) router3 (clk, reset, rx_busy[3], rx_data[3], tx_busy[3], tx_data[3], table_addr[3], table_data[3], activity_level[3]);
-	router #(4) router4 (clk, reset, rx_busy[4], rx_data[4], tx_busy[4], tx_data[4], table_addr[4], table_data[4], activity_level[4]);
-	router #(5) router5 (clk, reset, rx_busy[5], rx_data[5], tx_busy[5], tx_data[5], table_addr[5], table_data[5], activity_level[5]);
-	router #(6) router6 (clk, reset, rx_busy[6], rx_data[6], tx_busy[6], tx_data[6], table_addr[6], table_data[6], activity_level[6]);
-	router #(7) router7 (clk, reset, rx_busy[7], rx_data[7], tx_busy[7], tx_data[7], table_addr[7], table_data[7], activity_level[7]);
-	router #(8) router8 (clk, reset, rx_busy[8], rx_data[8], tx_busy[8], tx_data[8], table_addr[8], table_data[8], activity_level[8]);
-	router #(9) router9 (clk, reset, rx_busy[9], rx_data[9], tx_busy[9], tx_data[9], table_addr[9], table_data[9], activity_level[9]);
-	router #(10) router10 (clk, reset, rx_busy[10], rx_data[10], tx_busy[10], tx_data[10], table_addr[10], table_data[10], activity_level[10]);
-	router #(11) router11 (clk, reset, rx_busy[11], rx_data[11], tx_busy[11], tx_data[11], table_addr[11], table_data[11], activity_level[11]);
-	router #(12) router12 (clk, reset, rx_busy[12], rx_data[12], tx_busy[12], tx_data[12], table_addr[12], table_data[12], activity_level[12]);
-	router #(13) router13 (clk, reset, rx_busy[13], rx_data[13], tx_busy[13], tx_data[13], table_addr[13], table_data[13], activity_level[13]);
-	router #(14) router14 (clk, reset, rx_busy[14], rx_data[14], tx_busy[14], tx_data[14], table_addr[14], table_data[14], activity_level[14]);
-	router #(15) router15 (clk, reset, rx_busy[15], rx_data[15], tx_busy[15], tx_data[15], table_addr[15], table_data[15], activity_level[15]);
-
-	// routing tables:
-	// -----------------------------------------------------------------
-
 	wire [`SIZE-1:0] table_addr [`NUM_NODES-1:0];
-
 	wire [`BITS_DIR-1:0] table_data [`NUM_NODES-1:0];
 
-	routing_table #(0) rtable0 (reset, table_addr[0], table_data[0]);
-	routing_table #(1) rtable1 (reset, table_addr[1], table_data[1]);
-	routing_table #(2) rtable2 (reset, table_addr[2], table_data[2]);
-	routing_table #(3) rtable3 (reset, table_addr[3], table_data[3]);
-	routing_table #(4) rtable4 (reset, table_addr[4], table_data[4]);
-	routing_table #(5) rtable5 (reset, table_addr[5], table_data[5]);
-	routing_table #(6) rtable6 (reset, table_addr[6], table_data[6]);
-	routing_table #(7) rtable7 (reset, table_addr[7], table_data[7]);
-	routing_table #(8) rtable8 (reset, table_addr[8], table_data[8]);
-	routing_table #(9) rtable9 (reset, table_addr[9], table_data[9]);
-	routing_table #(10) rtable10 (reset, table_addr[10], table_data[10]);
-	routing_table #(11) rtable11 (reset, table_addr[11], table_data[11]);
-	routing_table #(12) rtable12 (reset, table_addr[12], table_data[12]);
-	routing_table #(13) rtable13 (reset, table_addr[13], table_data[13]);
-	routing_table #(14) rtable14 (reset, table_addr[14], table_data[14]);
-	routing_table #(15) rtable15 (reset, table_addr[15], table_data[15]);
+	generate
+		genvar i;
+		for (i=0; i<`NUM_NODES; i=i+1) begin
+			router #(i) ri (clk, reset, rx_busy[i], rx_data[i], tx_busy[i], tx_data[i], table_addr[i], table_data[i], activity_level[i]);
+			routing_table #(i) rtabi (reset, table_addr[i], table_data[i]);
+		end
+	endgenerate
 
 	// sources:
 	// -----------------------------------------------------------------

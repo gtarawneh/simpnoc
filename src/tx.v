@@ -46,7 +46,11 @@ module tx (clk, reset, req, tx_busy, channel_busy, parallel_in, serial_out, tx_a
 					item[`SIZE+1] <= 1;
 					item[0] <= 1;
 
-					if (!tx_active && (routerid > -1)) $display("router %d %s tx : %d", routerid, port, parallel_in);
+					// if (!tx_active && (routerid > -1)) $display("router %d %s tx : %d", routerid, port, parallel_in);
+
+					if (!tx_active && (routerid > -1)) begin
+						$display("[%g] router %2d: (%s) sent : %d", $time, routerid, port, item>>1);
+					end
 
 					//item <= {1'b1, parallel_in[`SIZE-1:0], 1'b1}; // leading one is the start bit of the flit
 

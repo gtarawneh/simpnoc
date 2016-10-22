@@ -77,7 +77,7 @@ module sink (clk, reset, data, req, busy, througput);
 
 			if (req) begin
 				register <= data;
-				$display ("sinked flit  : ", data);
+				$display ("sinked flit : %g", data);
 			end
 			//busy <= (rand > 50);
 			busy <= 0;

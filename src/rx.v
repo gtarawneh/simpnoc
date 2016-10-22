@@ -50,8 +50,13 @@ module rx (clk, reset, valid, channel_busy, item_read, serial_in, parallel_out);
 				item[`SIZE] <= serial_in;
 
 				if (item[0]) begin
+
 					state <= 2; // item received when LSB is 1
-					if (routerid > -1) $display("router %d %s rx : %d", routerid, port, item>>1);
+
+					if (routerid > -1) begin
+						$display("[%g] router %2d: (%s) received : %d", $time, routerid, port, item>>1);
+					end
+
 				end
 
 			end
