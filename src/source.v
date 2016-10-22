@@ -8,31 +8,35 @@
 	`include "tx.v"
 `endif
 
-module serial_source (clk, reset, serial_out, busy, pir);
+module serial_source (clk, reset, serial_out, busy);
 
- 	parameter DEST_ID=`NUM_NODES-1;
-	parameter NODE_ID=0;
+ 	parameter destination = `NUM_NODES-1;
+
+	parameter id = 0;
+
+	parameter max_flits = -1;
 
 	input clk, reset, busy;
-	input [7:0] pir;
+
 	output serial_out;
 
 	wire [`SIZE-1:0] data;
 
-	source #(.DEST_ID(DEST_ID), .NODE_ID(NODE_ID)) s1 (clk, reset, data, req, tx_busy, pir);
+	source #(.destination(destination), .id(id), .max_flits(max_flits)) s1 (clk, reset, data, req, tx_busy);
 
 	tx tx1 (clk, reset, req, tx_busy, busy, data, serial_out, active);
 
 endmodule
 
-module source (clk, reset, data, req, busy, pir);
+module source (clk, reset, data, req, busy);
 
-	parameter DEST_ID=`NUM_NODES-1;
-	parameter NODE_ID=0;
+	parameter destination = `NUM_NODES-1;
+
+	parameter id = 0;
+
+	parameter max_flits = -1;
 
 	input clk, reset, busy;
-
-	input [7:0] pir;
 
 	output req;
 
@@ -40,7 +44,7 @@ module source (clk, reset, data, req, busy, pir);
 
 	reg [`SIZE-1:0] data;
 
-	reg [7:0] counter;
+	reg [7:0] flits;
 
 	reg req;
 
@@ -50,24 +54,21 @@ module source (clk, reset, data, req, busy, pir);
 
 			data <= 0;
 			req <= 0;
-			counter <= 0;
+			flits <= 0;
 
 		end else begin
 
-			if (counter > pir) begin
+			if (!busy && flits<max_flits) begin
 
-				if (!busy) begin
+				data <= flits;
+				req <= 1;
+				flits <= (flits<128) ? flits + 1 : flits;
 
-					data <= DEST_ID;
-					req <= 1;
-					counter <= 0;
-
-				end
+				$display ("[%g] source %g: sent %g to destination %g", $time, id, flits, destination);
 
 			end else begin
 
-				counter = counter + 1;
-				req <=0;
+				req <= 0;
 
 			end
 

@@ -160,10 +160,10 @@ module router (clk, reset, rx_busy, rx_data, tx_busy, tx_data, table_addr, table
 
 	always @(posedge clk) begin
 		if (write) begin
-			$display("[%g] router %2d: pushed %d to fifo", $time, routerid, fifo_item_in);
+			$display("[%g] router %g: pushed %d to fifo", $time, routerid, fifo_item_in);
 		end
 		if (read) begin
-			$display("[%g] router %2d: popped %d from fifo", $time, routerid, fifo_item_out);
+			$display("[%g] router %g: popped %d from fifo", $time, routerid, fifo_item_out);
 		end
 	end
 

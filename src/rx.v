@@ -54,7 +54,7 @@ module rx (clk, reset, valid, channel_busy, item_read, serial_in, parallel_out);
 					state <= 2; // item received when LSB is 1
 
 					if (routerid > -1) begin
-						$display("[%g] router %2d: (%s) received : %d", $time, routerid, port, item>>1);
+						$display("[%g] router %g: (%s) received : %d", $time, routerid, port, item>>1);
 					end
 
 				end
