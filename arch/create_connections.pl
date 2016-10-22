@@ -1,3 +1,4 @@
+#!/bin/perl
 
 use Switch;
 
@@ -9,15 +10,15 @@ while (<$fid>)
 {
 	chomp;
 	$line = $_;
-	
+
 	if (!($line =~ /^#/))
 	{
 		if (!($line =~ /^$/))
 		{
 			@arr = split(/,/, $line);
-			
+
 			$id = @arr[0];
-			
+
 			switch ($id)
 			{
 				case "rr"
@@ -26,7 +27,7 @@ while (<$fid>)
 					$r2 = $arr[2];
 					$p1 = $arr[3];
 					$p2 = $arr[4];
-					
+
 					print "assign rx_data[$r2][$p2] = tx_data[$r1][$p1];\n";
 					print "assign tx_busy[$r1][$p1] = rx_busy[$r2][$p2];\n";
 					print "\n";
@@ -53,7 +54,7 @@ while (<$fid>)
 				{
 					$r = @arr[1];
 					$p = @arr[2];
-					print "assign tx_busy[$r][$p] = 0;\n";				
+					print "assign tx_busy[$r][$p] = 0;\n";
 				}
 				case "rx"
 				{
@@ -66,9 +67,9 @@ while (<$fid>)
 					die("** syntax error in file '$file' **\n");
 				}
 			}
-				
-			
-			
+
+
+
 		}
 	}
 }

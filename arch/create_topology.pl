@@ -1,3 +1,5 @@
+#!/bin/parl
+
 $w=4;
 $h=4;
 
@@ -54,7 +56,7 @@ for ($y=0; $y<$h; $y++)
 	#print "router $r1 east -> terminator\n";
 	print "# east terminator\n";
 	print "tx,$r1,2\n";
-	print "rx,$r1,2\n";	
+	print "rx,$r1,2\n";
 }
 
 for ($i=0; $i<$h * $w; $i++)
@@ -64,7 +66,7 @@ for ($i=0; $i<$h * $w; $i++)
 
 	print "#source\n";
 	print "sr,$i,$i,4\n";
-	
+
 	print "#sink\n";
 	print "rs,$i,4,$i\n";
 

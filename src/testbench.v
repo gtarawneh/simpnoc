@@ -1,36 +1,37 @@
-
 `timescale 1ns/100ps
 
 `include "constants_2D.v"
-`include "fifo.v"
 `include "basics.v"
-`include "tx.v"
-`include "tx_logic.v"
-`include "rx.v"
 `include "source.v"
 `include "source_from_memory.v"
 `include "router.v"
-`include "rx_logic.v"
 `include "sink.v"
 `include "moody_sink.v"
-`include "routing_table.v"	
-	
-module testbench(); 
+`include "routing_table.v"
+
+module testbench();
+
+	initial begin
+		$display("start of simulation ...");
+		$dumpfile("output/dump.vcd");
+		$dumpvars(0, testbench);
+		#100 $finish;
+	end
 
 	wire clk, reset;
-	
+
 	generator g1 (clk, reset);
-	
+
 	// routers:
 	// -----------------------------------------------------------------
-	
+
 	wire [4:0] rx_busy [`NUM_NODES-1:0];
 	wire [4:0] rx_data [`NUM_NODES-1:0];
 	wire [4:0] tx_busy [`NUM_NODES-1:0];
 	wire [4:0] tx_data [`NUM_NODES-1:0];
 	wire [2:0] activity_level [`NUM_NODES-1:0];
 
-	router #(0) router0 (clk, reset, rx_busy[0], rx_data[0], tx_busy[0], tx_data[0], table_addr[0], table_data[0], activity_level[0]);	
+	router #(0) router0 (clk, reset, rx_busy[0], rx_data[0], tx_busy[0], tx_data[0], table_addr[0], table_data[0], activity_level[0]);
 	router #(1) router1 (clk, reset, rx_busy[1], rx_data[1], tx_busy[1], tx_data[1], table_addr[1], table_data[1], activity_level[1]);
 	router #(2) router2 (clk, reset, rx_busy[2], rx_data[2], tx_busy[2], tx_data[2], table_addr[2], table_data[2], activity_level[2]);
 	router #(3) router3 (clk, reset, rx_busy[3], rx_data[3], tx_busy[3], tx_data[3], table_addr[3], table_data[3], activity_level[3]);
@@ -48,10 +49,10 @@ module testbench();
 	router #(15) router15 (clk, reset, rx_busy[15], rx_data[15], tx_busy[15], tx_data[15], table_addr[15], table_data[15], activity_level[15]);
 
 	// routing tables:
-	// -----------------------------------------------------------------	
-	
+	// -----------------------------------------------------------------
+
 	wire [`SIZE-1:0] table_addr [`NUM_NODES-1:0];
-	
+
 	wire [`BITS_DIR-1:0] table_data [`NUM_NODES-1:0];
 
 	routing_table #(0) rtable0 (reset, table_addr[0], table_data[0]);
@@ -69,20 +70,21 @@ module testbench();
 	routing_table #(12) rtable12 (reset, table_addr[12], table_data[12]);
 	routing_table #(13) rtable13 (reset, table_addr[13], table_data[13]);
 	routing_table #(14) rtable14 (reset, table_addr[14], table_data[14]);
-	routing_table #(15) rtable15 (reset, table_addr[15], table_data[15]);	
-	
+	routing_table #(15) rtable15 (reset, table_addr[15], table_data[15]);
+
 	// sources:
 	// -----------------------------------------------------------------
-	
+
 	wire source_data [`NUM_NODES-1:0];
 	wire source_busy [`NUM_NODES-1:0];
-	
+
 	//serial_source_from_memory #(0, 16, "traffic/0) source0 (clk, reset, source_data[0], source_busy[0]);
-	serial_source #(4, 1) source1 (clk, reset, source_data[1], source_busy[1], 25);
-	
-	serial_source #(8, 2) source2 (clk, reset, source_data[2], source_busy[2], 25);
-	
-	serial_source #(12, 3) source3 (clk, reset, source_data[3], source_busy[3], 25);
+
+	serial_source #(4, 1) source1 (clk, reset, source_data[1], source_busy[1], 8'd25);
+
+	serial_source #(8, 2) source2 (clk, reset, source_data[2], source_busy[2], 8'd25);
+
+	serial_source #(12, 3) source3 (clk, reset, source_data[3], source_busy[3], 8'd25 );
 	/*
 	serial_source_from_memory #(1, 16, "traffic/0) source1 (clk, reset, source_data[1], source_busy[1]);
 	serial_source_from_memory #(2, 16, "traffic/0) source2 (clk, reset, source_data[2], source_busy[2]);
@@ -102,7 +104,7 @@ module testbench();
 */
 	// sinks:
 	// -----------------------------------------------------------------
-	
+
 	wire sink_data [`NUM_NODES-1:0];
 	wire sink_busy [`NUM_NODES-1:0];
 /*
@@ -121,8 +123,8 @@ module testbench();
 	serial_moody_sink #(12, 255) sink12 (clk, reset, sink_busy[12], sink_data[12]);
 	serial_moody_sink #(13, 255) sink13 (clk, reset, sink_busy[13], sink_data[13]);
 	serial_moody_sink #(14, 255) sink14 (clk, reset, sink_busy[14], sink_data[14]);
-	serial_moody_sink #(15, 255) sink15 (clk, reset, sink_busy[15], sink_data[15]);	
-*/	
+	serial_moody_sink #(15, 255) sink15 (clk, reset, sink_busy[15], sink_data[15]);
+*/
 	wire [25:0] througput [`NUM_NODES-1:0];
 
 	serial_sink sink0 (clk, reset, sink_busy[0], sink_data[0], througput[0]);
@@ -137,14 +139,14 @@ module testbench();
 	serial_sink sink9 (clk, reset, sink_busy[9], sink_data[9], througput[9]);
 	serial_sink sink10 (clk, reset, sink_busy[10], sink_data[10], througput[10]);
 	serial_sink sink11 (clk, reset, sink_busy[11], sink_data[11], througput[11]);
-	serial_sink sink12 (clk, reset, sink_busy[12], sink_data[12], througput[12]);	
+	serial_sink sink12 (clk, reset, sink_busy[12], sink_data[12], througput[12]);
 	serial_sink sink13 (clk, reset, sink_busy[13], sink_data[13], througput[13]);
 	serial_sink sink14 (clk, reset, sink_busy[14], sink_data[14], througput[14]);
 	serial_sink sink15 (clk, reset, sink_busy[15], sink_data[15], througput[15]);
-		
+
 	// connections:
 	// -----------------------------------------------------------------
-	
+
 	`include "connections.v"
-	
+
 endmodule
