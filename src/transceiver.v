@@ -8,11 +8,11 @@
 // postfix 2 belong to the channel with the receiving entity (i.e. req2
 // initiates a handshake with the item in data2).
 
-module tx_p (clk, reset, req1, ack1, data1, req2, ack2, data2);
+module transceiver (clk, reset, req1, ack1, data1, req2, ack2, data2);
 
-	parameter routerid=-1;
+	parameter id = -1; // parent router id
 
-	parameter port="unknown";
+	parameter port = "unknown";
 
 	input clk, reset;
 
