@@ -15,7 +15,7 @@ module testbench();
 		$display("start of stimulation");
 		$dumpfile("output/dump.vcd");
 		$dumpvars(0, testbench);
-		#50
+		#150
 		$display("end of stimulation");
 		$finish;
 	end
@@ -48,7 +48,7 @@ module testbench();
 	wire source_data [`NUM_NODES-1:0];
 	wire source_busy [`NUM_NODES-1:0];
 
-	serial_source #(.destination(4), .id(0), .max_flits(1)) source1 (clk, reset, source_data[0], source_busy[0]);
+	serial_source #(.destination(3), .id(0), .max_flits(1)) source1 (clk, reset, source_data[0], source_busy[0]);
 
 	// sinks:
 

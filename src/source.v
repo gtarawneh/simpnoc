@@ -60,7 +60,7 @@ module source (clk, reset, data, req, busy);
 
 			if (!busy && flits<max_flits) begin
 
-				data <= flits;
+				data <= destination;
 				req <= 1;
 				flits <= (flits<128) ? flits + 1 : flits;
 
