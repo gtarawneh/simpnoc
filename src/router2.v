@@ -3,9 +3,9 @@
 	`include "constants_2D.v"
 `endif
 
-`ifndef _inc_rx_logic_
-	`define _inc_rx_logic_
-	`include "rx_logic.v"
+`ifndef _inc_rx_logic2_
+	`define _inc_rx_logic2_
+	`include "rx_logic2.v"
 `endif
 
 `ifndef _inc_fifo_
@@ -13,12 +13,28 @@
 	`include "fifo.v"
 `endif
 
-`ifndef _inc_tx_logic_
-	`define _inc_tx_logic_
-	`include "tx_logic.v"
+`ifndef _inc_tx_logic2_
+	`define _inc_tx_logic2_
+	`include "tx_logic2.v"
 `endif
 
-module router2 (clk, reset, tx_req, tx_ack, tx_data, rx_req, rx_ack, rx_data, table_addr, table_data)
+`ifndef _inc_transceiver
+	`define _inc_transceiver
+	`include "transceiver.v"
+`endif
+
+module router2 (
+		clk,
+		reset,
+		tx_req,
+		tx_ack,
+		tx_data,
+		rx_req,
+		rx_ack,
+		rx_data,
+		table_addr,
+		table_data
+	);
 
 	parameter id = -1; // router id
 
@@ -42,13 +58,13 @@ module router2 (clk, reset, tx_req, tx_ack, tx_data, rx_req, rx_ack, rx_data, ta
 
 	output [4:0] tx_req;
 	input [4:0] tx_ack;
-	output [4:0] tx_data [`SIZE-1:0];
+	output [5*`SIZE-1:0] tx_data;
 
 	// rx transceiver signals:
 
 	input [4:0] rx_req;
 	output [4:0] rx_ack;
-	input [4:0] rx_data [`SIZE-1:0];
+	input [5*`SIZE-1:0] rx_data;
 
 	// Interface and internal nets:
 	// -----------------------------------------------------------------
@@ -60,19 +76,27 @@ module router2 (clk, reset, tx_req, tx_ack, tx_data, rx_req, rx_ack, rx_data, ta
 	// RX :
 	// -----------------------------------------------------------------
 
+	wire [4:0] fifo_push_req;
+	wire [4:0] fifo_push_ack;
+
+	wire [5*`SIZE-1:0] fifo_push_data;
+
 	generate
 		genvar i;
 		for (i=0; i<5; i=i+1) begin : RX_BLOCK
-			transceiver #(.id(id)) rx
-			(
+			wire [`SIZE-1:0] rx_data_item;
+			wire [`SIZE-1:0] fifo_push_data_item;
+			assign rx_data_item = rx_data[(`SIZE*(i+1)-1):(`SIZE*i)];
+			assign fifo_push_data_item = fifo_push_data[(`SIZE*(i+1)-1):(`SIZE*i)];
+			transceiver #(.id(id)) rx (
 				.clk(clk),
 				.reset(reset),
-				.req1(rx_req[0]),
-				.ack1(rx_ack[0]),
-				.data1(rx_data[0]),
-				.req2(fifo_push_req[0]),
-				.ack2(fifo_push_ack[0]),
-				.data2(fifo_push_data[0])
+				.req1(rx_req[i]),
+				.ack1(rx_ack[i]),
+				.data1(rx_data_item),
+				.req2(fifo_push_req[i]),
+				.ack2(fifo_push_ack[i]),
+				.data2(fifo_push_data_item)
 			);
 		end
 	endgenerate
@@ -86,8 +110,9 @@ module router2 (clk, reset, tx_req, tx_ack, tx_data, rx_req, rx_ack, rx_data, ta
 	// see this for referring to modules in generate blocks:
 	// https://stackoverflow.com/questions/36711849/defparam-inside-generate-block-in-veilog
 
-	rx_logic_2 rl
-	(
+	wire [`SIZE-1:0] fifo_data_in;
+
+	rx_logic_2 rl (
 		.clk(clk),
 		.reset(reset),
 		.fifo_push_req(fifo_push_req),
@@ -100,8 +125,7 @@ module router2 (clk, reset, tx_req, tx_ack, tx_data, rx_req, rx_ack, rx_data, ta
 
 	// -----------------------------------------------------------------
 
-	fifo #(routerid) myfifo1
-	(
+	fifo #(id) myfifo1 (
 		.clk(clk), .reset(reset),
 		.full(full), .empty(empty),
 		.item_in(fifo_item_in), .item_out(fifo_item_out),
@@ -110,18 +134,24 @@ module router2 (clk, reset, tx_req, tx_ack, tx_data, rx_req, rx_ack, rx_data, ta
 
 	always @(posedge clk) begin
 		if (write) begin
-			$display("[%g] router %g: pushed %d to fifo", $time, routerid, fifo_item_in);
+			$display("[%g] router %g: pushed %d to fifo", $time, id, fifo_item_in);
 		end
 		if (read) begin
-			$display("[%g] router %g: popped %d from fifo", $time, routerid, fifo_item_out);
+			$display("[%g] router %g: popped %d from fifo", $time, id, fifo_item_out);
 		end
 	end
 
 	// TX :
 	// -----------------------------------------------------------------
 
-	tx_logic_2 tl
-	(
+	wire [4:0] fifo_pop_req;
+	wire [4:0] fifo_pop_ack;
+	wire [5*`SIZE-1:0] fifo_pop_data;
+	wire fifo_read;
+	wire fifo_empty;
+	wire [`SIZE-1:0] fifo_data_out;
+
+	tx_logic_2 tl (
 		.clk(clk),
 		.reset(reset),
 		.fifo_pop_req(fifo_pop_req),
@@ -135,16 +165,20 @@ module router2 (clk, reset, tx_req, tx_ack, tx_data, rx_req, rx_ack, rx_data, ta
 	generate
 		genvar j;
 		for (j=0; j<5; j=j+1) begin : TX_BLOCK
+			wire [`SIZE-1:0] fifo_pop_data_item;
+			wire [`SIZE-1:0] tx_data_item;
+			assign fifo_pop_data_item = fifo_pop_data[(`SIZE*(j+1)-1):(`SIZE*j)];
+			assign tx_data_item = tx_data[(`SIZE*(j+1)-1):(`SIZE*j)];
 			transceiver #(.id(id)) tx
 			(
 				.clk(clk),
 				.reset(reset),
 				.req1(fifo_pop_req[j]),
 				.ack1(fifo_pop_ack[j]),
-				.data1(fifo_pop_data[j]),
-				.req2(rx_req[j]),
-				.ack2(rx_ack[j]),
-				.data2(rx_data[j])
+				.data1(fifo_pop_data_item),
+				.req2(tx_req[j]),
+				.ack2(tx_ack[j]),
+				.data2(tx_data_item)
 			);
 		end
 	endgenerate
