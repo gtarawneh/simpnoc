@@ -23,6 +23,12 @@
 	`include "transceiver.v"
 `endif
 
+// bit 0 : north
+// bit 1 : south
+// bit 2 : east
+// bit 3 : west
+// bit 4 : local
+
 module router2 (
 		clk,
 		reset,
@@ -38,32 +44,26 @@ module router2 (
 
 	parameter id = -1; // router id
 
-	// Ports:
-	// -----------------------------------------------------------------
-
 	input clk, reset;
 
 	output [`SIZE-1:0] table_addr;
 
 	input [`BITS_DIR-1:0] table_data;
 
-	// the follow are all bitfield ports with the following format
-	// bit 0 : north
-	// bit 1 : south
-	// bit 2 : east
-	// bit 3 : west
-	// bit 4 : local
-
 	// tx transceiver signals:
 
 	output [4:0] tx_req;
+
 	input [4:0] tx_ack;
+
 	output [5*`SIZE-1:0] tx_data;
 
 	// rx transceiver signals:
 
 	input [4:0] rx_req;
+
 	output [4:0] rx_ack;
+
 	input [5*`SIZE-1:0] rx_data;
 
 	// Interface and internal nets:
@@ -77,6 +77,7 @@ module router2 (
 	// -----------------------------------------------------------------
 
 	wire [4:0] fifo_push_req;
+
 	wire [4:0] fifo_push_ack;
 
 	wire [5*`SIZE-1:0] fifo_push_data;
@@ -86,8 +87,10 @@ module router2 (
 		for (i=0; i<5; i=i+1) begin : RX_BLOCK
 			wire [`SIZE-1:0] rx_data_item;
 			wire [`SIZE-1:0] fifo_push_data_item;
-			assign rx_data_item = rx_data[(`SIZE*(i+1)-1):(`SIZE*i)];
-			assign fifo_push_data_item = fifo_push_data[(`SIZE*(i+1)-1):(`SIZE*i)];
+			localparam BH = `SIZE * i + (`SIZE-1);
+			localparam BL = `SIZE * i;
+			assign rx_data_item = rx_data[BH:BL];
+			assign fifo_push_data_item = fifo_push_data[BH:BL];
 			transceiver #(.id(id)) rx (
 				.clk(clk),
 				.reset(reset),
@@ -126,10 +129,14 @@ module router2 (
 	// -----------------------------------------------------------------
 
 	fifo #(id) myfifo1 (
-		.clk(clk), .reset(reset),
-		.full(full), .empty(empty),
-		.item_in(fifo_item_in), .item_out(fifo_item_out),
-		.write (write), .read(read)
+		.clk(clk),
+		.reset(reset),
+		.full(full),
+		.empty(empty),
+		.item_in(fifo_item_in),
+		.item_out(fifo_item_out),
+		.write (write),
+		.read(read)
 	);
 
 	always @(posedge clk) begin
@@ -159,7 +166,9 @@ module router2 (
 		.fifo_pop_data(fifo_pop_data),
 		.fifo_read(fifo_read),
 		.fifo_empty(fifo_empty),
-		.fifo_data_out(fifo_data_out)
+		.fifo_data_out(fifo_data_out),
+		.table_addr(table_addr),
+		.table_data(table_data),
 	);
 
 	generate
@@ -167,8 +176,10 @@ module router2 (
 		for (j=0; j<5; j=j+1) begin : TX_BLOCK
 			wire [`SIZE-1:0] fifo_pop_data_item;
 			wire [`SIZE-1:0] tx_data_item;
-			assign fifo_pop_data_item = fifo_pop_data[(`SIZE*(j+1)-1):(`SIZE*j)];
-			assign tx_data_item = tx_data[(`SIZE*(j+1)-1):(`SIZE*j)];
+			localparam BH = `SIZE * j + (`SIZE-1);
+			localparam BL = `SIZE * j;
+			assign fifo_pop_data_item = fifo_pop_data[BH:BL];
+			assign tx_data_item = tx_data[BH:BL];
 			transceiver #(.id(id)) tx
 			(
 				.clk(clk),
