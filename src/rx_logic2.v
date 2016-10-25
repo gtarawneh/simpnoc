@@ -1,3 +1,10 @@
+`ifndef SIZE
+	`define SIZE 8
+`endif
+
+// this modules receives incoming data items from 5 senders (using two-phase
+// handshakes) and picks one at a time to push into a fifo
+
 module rx_logic_2 (
 		clk,
 		reset,
@@ -11,16 +18,78 @@ module rx_logic_2 (
 
 	input clk, reset;
 
+	// fifo_push interfaces (with the senders)
+
 	input [4:0] fifo_push_req;
-	output [4:0] fifo_push_ack;
+
+	output reg [4:0] fifo_push_ack;
+
 	input [`SIZE*5-1:0] fifo_push_data;
-	output fifo_write;
+
+	wire [`SIZE-1:0] fifo_push_data_arr [4:0];
+
+	genvar k;
+	generate
+		for (k=0; k<5; k=k+1) begin
+			localparam s = 8 * (k-1);
+			assign fifo_push_data_arr[k] = fifo_push_data[s+7:s];
+		end
+	endgenerate
+
+	// fifo interface:
+
+	output reg fifo_write;
+
 	input fifo_full;
-	output [`SIZE-1:0] fifo_data_in;
 
-	// TODO: expand stub
+	output reg [`SIZE-1:0] fifo_data_in;
 
-	assign fifo_write = 0;
-	assign fifo_data_in = 0;
+	// internal nets:
+
+	wire [2:0] selectedNum;
+
+	reg [4:0] fifo_push_req_old = 0;
+
+	// body
+
+	always @(posedge clk or posedge reset) begin
+
+		if (reset) begin
+
+			fifo_push_ack <= 0;
+
+			fifo_push_req_old <= 0;
+
+			fifo_write <= 0;
+
+		end else begin : BLOCK1
+
+			integer i;
+
+			if (fifo_full) begin
+
+				fifo_write = 0;
+
+			end else begin
+
+				for (i=0; i<5; i=i+1) begin
+
+					if (fifo_push_req[i] ^ fifo_push_req_old[i]) begin
+
+						fifo_write = 1;
+
+						fifo_push_ack[i] = !fifo_push_ack[i];
+
+						fifo_data_in = fifo_push_data_arr[i];
+
+					end
+
+				end
+
+			end
+
+		end
+
+	end
 
 endmodule
