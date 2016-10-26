@@ -63,8 +63,9 @@ module tx_logic_2 (
 	genvar k;
 	generate
 		for (k=0; k<5; k=k+1) begin
-			localparam s = 8 * k;
-			assign fifo_pop_data[s+7:s] = fifo_pop_data_arr[k];
+			localparam LB = `SIZE * k;
+			localparam HB = LB + `SIZE - 1;
+			assign fifo_pop_data[HB:LB] = fifo_pop_data_arr[k];
 		end
 	endgenerate
 

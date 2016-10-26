@@ -159,16 +159,24 @@ module router2 (
 	wire [`SIZE-1:0] fifo_data_out;
 
 	tx_logic_2 tl (
+	// .clk(clk),
+	// .reset(reset),
+	// .fifo_pop_req(fifo_pop_req),
+	// .fifo_pop_ack(fifo_pop_ack),
+	// .fifo_pop_data(fifo_pop_data),
+	// .fifo_read(fifo_read),
+	// .fifo_empty(fifo_empty),
+	// .fifo_data_out(fifo_data_out),
+	// .table_addr(table_addr),
+	// .table_data(table_data)
 		.clk(clk),
 		.reset(reset),
-		.fifo_pop_req(fifo_pop_req),
-		.fifo_pop_ack(fifo_pop_ack),
-		.fifo_pop_data(fifo_pop_data),
 		.fifo_read(fifo_read),
 		.fifo_empty(fifo_empty),
 		.fifo_data_out(fifo_data_out),
-		.table_addr(table_addr),
-		.table_data(table_data),
+		.fifo_pop_req(fifo_pop_req),
+		.fifo_pop_ack(fifo_pop_ack),
+		.fifo_pop_data(fifo_pop_data)
 	);
 
 	generate
