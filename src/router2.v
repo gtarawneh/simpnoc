@@ -23,6 +23,11 @@
 	`include "transceiver.v"
 `endif
 
+`ifndef _inc_transceiver_dummy
+	`define _inc_transceiver_dummy
+	`include "transceiver_dummy.v"
+`endif
+
 // bit 0 : north
 // bit 1 : south
 // bit 2 : east
@@ -91,7 +96,7 @@ module router2 (
 			localparam BL = `SIZE * i;
 			assign rx_data_item = rx_data[BH:BL];
 			assign fifo_push_data_item = fifo_push_data[BH:BL];
-			transceiver #(.id(id)) rx (
+			transceiver_dummy #(.id(id)) rx (
 				.clk(clk),
 				.reset(reset),
 				.req1(rx_req[i]),
@@ -110,12 +115,22 @@ module router2 (
 	defparam RX_BLOCK[3].rx.port = "West";
 	defparam RX_BLOCK[4].rx.port = "Local";
 
+	always @(posedge clk) begin
+
+		if (id == 0) begin
+
+			$display("#%3d, Router [%1d] : rx_req[0] = %g, rx_ack[0] = %g, fifo_write = %g", $time, id, rx_req[0], rx_ack[0], fifo_write);
+
+		end
+
+	end
+
 	// see this for referring to modules in generate blocks:
 	// https://stackoverflow.com/questions/36711849/defparam-inside-generate-block-in-veilog
 
 	wire [`SIZE-1:0] fifo_data_in;
 
-	rx_logic_2 rl (
+	rx_logic_2 #(.id(id)) rl (
 		.clk(clk),
 		.reset(reset),
 		.fifo_push_req(fifo_push_req),
@@ -188,8 +203,7 @@ module router2 (
 			localparam BL = `SIZE * j;
 			assign fifo_pop_data_item = fifo_pop_data[BH:BL];
 			assign tx_data_item = tx_data[BH:BL];
-			transceiver #(.id(id)) tx
-			(
+			transceiver_dummy #(.id(id)) tx (
 				.clk(clk),
 				.reset(reset),
 				.req1(fifo_pop_req[j]),

@@ -16,6 +16,8 @@ module rx_logic_2 (
 		fifo_data_in,
 	);
 
+	parameter id = -1; // parent router id
+
 	input clk, reset;
 
 	// fifo_push interfaces (with the senders)
@@ -68,9 +70,11 @@ module rx_logic_2 (
 
 			if (fifo_full) begin
 
-				fifo_write = 0;
+				fifo_write <= 0;
 
 			end else begin
+
+				fifo_write = 0;
 
 				for (i=0; i<5; i=i+1) begin
 
@@ -85,6 +89,8 @@ module rx_logic_2 (
 					end
 
 				end
+
+				fifo_push_req_old <= fifo_push_req;
 
 			end
 

@@ -10,7 +10,7 @@ module generator (clk, reset);
 	end
 
 	always begin
-		#1
+		#0.5
 		clk <= ~clk;
 	end
 
