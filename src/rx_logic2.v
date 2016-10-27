@@ -64,6 +64,8 @@ module rx_logic_2 (
 
 			fifo_write <= 0;
 
+			fifo_data_in <= 0;
+
 		end else begin : BLOCK1
 
 			integer i;
@@ -76,7 +78,9 @@ module rx_logic_2 (
 
 				fifo_write = 0;
 
-				for (i=0; i<5; i=i+1) begin
+				fifo_data_in = 0;
+
+				for (i=0; i<1; i=i+1) begin
 
 					if (fifo_push_req[i] ^ fifo_push_req_old[i]) begin
 
@@ -86,9 +90,13 @@ module rx_logic_2 (
 
 						fifo_data_in = fifo_push_data_arr[i];
 
+						$display(" -- %d", fifo_data_in);
+
 					end
 
 				end
+
+				// $display(" @@ %d", fifo_push_data);
 
 				fifo_push_req_old <= fifo_push_req;
 

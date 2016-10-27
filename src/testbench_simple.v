@@ -13,11 +13,9 @@
 module testbench_simple();
 
 	initial begin
-		$display("start of stimulation");
 		// $dumpfile("output/dump.vcd");
 		// $dumpvars(0, testbench_simple);
-		#25
-		$display("end of stimulation");
+		#10
 		$finish;
 	end
 
@@ -47,7 +45,7 @@ module testbench_simple();
 
 	generate
 		genvar i;
-		for (i=0; i<2; i=i+1) begin
+		for (i=0; i<1; i=i+1) begin
 			router2 #(i) ri (
 				clk,
 				reset,
@@ -75,6 +73,11 @@ module testbench_simple();
 	assign rx_req[0][0] = src_req;
 	assign rx_ack[0][0] = src_ack;
 	assign rx_data[0][`SIZE-1:0] = src_data;
+	assign rx_data[0][5*`SIZE-1:`SIZE] = 0;
+
+	// always @(posedge clk) begin
+	// 	$display("rx_data = %d", rx_data[0]);
+	// end
 
 	assign rx_req[1][0] = 0;
 

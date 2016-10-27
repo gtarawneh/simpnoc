@@ -36,7 +36,8 @@ module source2 (clk, reset, req, ack, data);
 
 			if (!busy && flits<max_flits) begin
 
-				data <= destination;
+				// data <= destination;
+				data <= 4;
 
 				req <= ~req;
 
@@ -44,7 +45,7 @@ module source2 (clk, reset, req, ack, data);
 
 				busy <= 1;
 
-				$display ("[%g] source %g: sent %g to destination %g", $time, id, flits, destination);
+				$display ("#%3d, Source [%1d] : sent %g to destination %g", $time, id, flits, destination);
 
 			end else if (busy & ack_received) begin
 

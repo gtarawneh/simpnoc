@@ -78,6 +78,15 @@ module router2 (
 
 	wire [`SIZE-1:0] fifo_item_out;
 
+	// tx nets:
+
+	wire [4:0] fifo_pop_req;
+	wire [4:0] fifo_pop_ack;
+	wire [5*`SIZE-1:0] fifo_pop_data;
+	wire fifo_read;
+	wire fifo_empty;
+	wire [`SIZE-1:0] fifo_data_out;
+
 	// RX :
 	// -----------------------------------------------------------------
 
@@ -95,7 +104,7 @@ module router2 (
 			localparam BH = `SIZE * i + (`SIZE-1);
 			localparam BL = `SIZE * i;
 			assign rx_data_item = rx_data[BH:BL];
-			assign fifo_push_data_item = fifo_push_data[BH:BL];
+			assign fifo_push_data[BH:BL] = fifo_push_data_item;
 			transceiver_dummy #(.id(id)) rx (
 				.clk(clk),
 				.reset(reset),
@@ -146,44 +155,30 @@ module router2 (
 	fifo #(id) myfifo1 (
 		.clk(clk),
 		.reset(reset),
-		.full(full),
-		.empty(empty),
+		.full(fifo_full),
+		.empty(fifo_empty),
 		.item_in(fifo_item_in),
 		.item_out(fifo_item_out),
-		.write (write),
-		.read(read)
+		.write (fifo_write),
+		.read(fifo_read)
 	);
 
 	always @(posedge clk) begin
-		if (write) begin
-			$display("[%g] router %g: pushed %d to fifo", $time, id, fifo_item_in);
-		end
-		if (read) begin
-			$display("[%g] router %g: popped %d from fifo", $time, id, fifo_item_out);
-		end
+
+		$display("#%3d, Router [%1d] : fifo_data_in = %d", $time, id, fifo_data_in);
+
+		if (fifo_write)
+			$display("#%3d, Router [%1d] : pushed %d to fifo", $time, id, fifo_data_in);
+
+		if (fifo_read)
+			$display("#%3d, Router [%1d] : popped %d from fifo", $time, id, fifo_item_out);
+
 	end
 
 	// TX :
 	// -----------------------------------------------------------------
 
-	wire [4:0] fifo_pop_req;
-	wire [4:0] fifo_pop_ack;
-	wire [5*`SIZE-1:0] fifo_pop_data;
-	wire fifo_read;
-	wire fifo_empty;
-	wire [`SIZE-1:0] fifo_data_out;
-
 	tx_logic_2 tl (
-	// .clk(clk),
-	// .reset(reset),
-	// .fifo_pop_req(fifo_pop_req),
-	// .fifo_pop_ack(fifo_pop_ack),
-	// .fifo_pop_data(fifo_pop_data),
-	// .fifo_read(fifo_read),
-	// .fifo_empty(fifo_empty),
-	// .fifo_data_out(fifo_data_out),
-	// .table_addr(table_addr),
-	// .table_data(table_data)
 		.clk(clk),
 		.reset(reset),
 		.fifo_read(fifo_read),
