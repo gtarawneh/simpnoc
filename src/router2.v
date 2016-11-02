@@ -34,6 +34,7 @@ module router2 (
 	parameter ID = -1; // router id
 	parameter SIZE = 8; // data bits
 	parameter PORT_COUNT = 5; // number of ports
+	parameter PORT_NAMES = {"North", "South", "East", "West", "Local"};
 
 	input clk, reset;
 
@@ -179,7 +180,7 @@ module router2 (
 			transceiver_dummy #(
 				.ID(ID),
 				.SIZE(SIZE),
-				.PORT(PORT)
+				.PORT(PORT_NAMES[j])
 			) tx (
 				.clk(clk),
 				.reset(reset),
@@ -192,11 +193,5 @@ module router2 (
 			);
 		end
 	endgenerate
-
-	defparam TX_BLOCK[0].tx.PORT = "North";
-	defparam TX_BLOCK[1].tx.PORT = "South";
-	defparam TX_BLOCK[2].tx.PORT = "East";
-	defparam TX_BLOCK[3].tx.PORT = "West";
-	defparam TX_BLOCK[4].tx.PORT = "Local";
 
 endmodule
