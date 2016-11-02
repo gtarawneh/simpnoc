@@ -19,34 +19,41 @@ module testbench_simple();
 		$finish;
 	end
 
+	localparam SIZE = 8;
+	localparam PORT_COUNT = 5; // number of ports
+
 	wire clk, reset;
 
 	generator u1 (clk, reset);
 
-	wire [`SIZE-1:0] table_addr [1:0];
+	wire [SIZE-1:0] table_addr [1:0];
 
 	wire [`BITS_DIR-1:0] table_data [1:0];
 
 	// router tx transceiver signals:
 
-	wire [4:0] tx_req [1:0];
+	wire [PORT_COUNT-1:0] tx_req [1:0];
 
-	wire [4:0] tx_ack [1:0];
+	wire [PORT_COUNT-1:0] tx_ack [1:0];
 
-	wire [5*`SIZE-1:0] tx_data [1:0];
+	wire [PORT_COUNT*SIZE-1:0] tx_data [1:0];
 
 	// router rx transceiver signals:
 
-	wire [4:0] rx_req [1:0];
+	wire [PORT_COUNT-1:0] rx_req [1:0];
 
-	wire [4:0] rx_ack [1:0];
+	wire [PORT_COUNT-1:0] rx_ack [1:0];
 
-	wire [5*`SIZE-1:0] rx_data [1:0];
+	wire [PORT_COUNT*SIZE-1:0] rx_data [1:0];
 
 	generate
 		genvar i;
 		for (i=0; i<1; i=i+1) begin
-			router2 #(i) ri (
+			router2 #(
+				.ID(i),
+				.SIZE(SIZE),
+				.PORT_COUNT(5)
+			) ri (
 				clk,
 				reset,
 				tx_req[i],
@@ -66,34 +73,39 @@ module testbench_simple();
 
 	wire src_req, src_ac;
 
-	wire [`SIZE-1:0] src_data;
+	wire [SIZE-1:0] src_data;
 
-	source2 #(.max_flits(1)) src1 (clk, reset, src_req, src_ack, src_data);
+	source2 #(
+		.ID(0),
+		.DESTINATION(100),
+		.MAX_FLITS(1),
+		.SIZE(SIZE),
+		.PAYLOAD(4)
+	) src1 (
+		.clk(clk),
+		.reset(reset),
+		.req(src_req),
+		.ack(src_ack),
+		.data(src_data)
+	);
 
 	assign rx_req[0][0] = src_req;
 	assign src_ack = rx_ack[0][0];
-	assign rx_data[0][`SIZE-1:0] = src_data;
+	assign rx_data[0][SIZE-1:0] = src_data;
 
 	assign rx_req[0][1] = 0;
 	assign rx_req[0][2] = 0;
 	assign rx_req[0][3] = 0;
 	assign rx_req[0][4] = 0;
-	assign rx_data[0][5*`SIZE-1:`SIZE] = 0;
-
-	// always @(posedge clk) begin
-	// 	$display("rx_data = %d", rx_data[0]);
-	// end
+	assign rx_data[0][PORT_COUNT*SIZE-1:SIZE] = 0;
 
 	assign rx_req[1][0] = 0;
 
 	// sink
 
-	wire [`SIZE-1:0] snk_data;
+	wire [SIZE-1:0] snk_data;
 
-	// always @(posedge clk)
-	// 	$display("  -- %g", snk_req);
-
-	assign snk_data = tx_data[0][`SIZE-1:0];
+	assign snk_data = tx_data[0][SIZE-1:0];
 	assign snk_req = tx_req[0][0];
 	assign tx_ack[0][0] = snk_ack;
 

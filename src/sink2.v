@@ -1,10 +1,11 @@
 module sink2 (clk, reset, req, ack, data);
 
-	parameter id = 0;
+	parameter ID = 0;
+	parameter SIZE = 8;
 
 	input clk, reset, req;
 
-	input [`SIZE-1:0] data;
+	input [SIZE-1:0] data;
 
 	output reg ack;
 
@@ -24,7 +25,7 @@ module sink2 (clk, reset, req, ack, data);
 
 			if (req ^ req_old) begin
 
-				$display("#%3d, %10s [%1d] : received <%g>, acknowledging", $time, "Sink", id, data);
+				$display("#%3d, %10s [%1d] : received <%g>, acknowledging", $time, "Sink", ID, data);
 
 				ack <= ~ack;
 

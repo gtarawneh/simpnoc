@@ -1,9 +1,5 @@
-`ifndef SIZE
-	`define SIZE 8
-`endif
-
-// this modules receives incoming data items from 5 senders (using two-phase
-// handshakes) and picks one at a time to push into a fifo
+// this modules receives incoming data items from several senders (using two-
+// phase handshakes) and picks one at a time to push into a fifo
 
 module rx_logic_2 (
 		clk,
@@ -16,25 +12,27 @@ module rx_logic_2 (
 		fifo_item_in,
 	);
 
-	parameter id = -1; // parent router id
+	parameter ID = -1;
+	parameter SIZE = 8;
+	parameter PORT_COUNT = 5;
 
 	input clk, reset;
 
 	// fifo_push interfaces (with the senders)
 
-	input [4:0] fifo_push_req;
+	input [PORT_COUNT-1:0] fifo_push_req;
 
-	output reg [4:0] fifo_push_ack;
+	output reg [PORT_COUNT-1:0] fifo_push_ack;
 
-	input [`SIZE*5-1:0] fifo_push_data;
+	input [SIZE*PORT_COUNT-1:0] fifo_push_data;
 
-	wire [`SIZE-1:0] fifo_push_data_arr [4:0];
+	wire [SIZE-1:0] fifo_push_data_arr [PORT_COUNT-1:0];
 
 	genvar k;
 	generate
-		for (k=0; k<5; k=k+1) begin
+		for (k=0; k<PORT_COUNT; k=k+1) begin
 			localparam LSB = 8 * k;
-			localparam MSB = LSB + `SIZE-1;
+			localparam MSB = LSB + SIZE-1;
 			assign fifo_push_data_arr[k] = fifo_push_data[MSB:LSB];
 		end
 	endgenerate
@@ -45,13 +43,13 @@ module rx_logic_2 (
 
 	input fifo_full;
 
-	output reg [`SIZE-1:0] fifo_item_in;
+	output reg [SIZE-1:0] fifo_item_in;
 
 	// internal nets:
 
 	wire [2:0] selectedNum;
 
-	reg [4:0] fifo_push_req_old = 0;
+	reg [PORT_COUNT-1:0] fifo_push_req_old = 0;
 
 	// body
 
@@ -87,7 +85,7 @@ module rx_logic_2 (
 
 				port = NO_PORT;
 
-				for (i=0; i<5; i=i+1)
+				for (i=0; i<PORT_COUNT; i=i+1)
 					if (fifo_push_req[i] ^ fifo_push_req_old[i])
 						port = i;
 
@@ -99,7 +97,7 @@ module rx_logic_2 (
 
 					fifo_item_in = fifo_push_data_arr[port];
 
-					$display("#%3d, %10s [%1d] : received <%g> from port <%g>, acknowledging, pushing to fifo", $time, "RX_LOGIC", id, fifo_item_in, port);
+					$display("#%3d, %10s [%1d] : received <%g> from port <%g>, acknowledging, pushing to fifo", $time, "RX_LOGIC", ID, fifo_item_in, port);
 
 				end
 

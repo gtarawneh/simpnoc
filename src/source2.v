@@ -1,16 +1,16 @@
 module source2 (clk, reset, req, ack, data);
 
-	parameter destination = 0;
-
-	parameter id = 0;
-
-	parameter max_flits = 2;
+	parameter ID = 0;
+	parameter DESTINATION = 0;
+	parameter MAX_FLITS = 2;
+	parameter SIZE = 8;
+	parameter PAYLOAD = 4;
 
 	input clk, reset, ack;
 
 	output reg req;
 
-	output reg [`SIZE-1:0] data;
+	output reg [SIZE-1:0] data;
 
 	reg [7:0] flits;
 
@@ -19,10 +19,6 @@ module source2 (clk, reset, req, ack, data);
 	reg busy;
 
 	wire ack_received = ack ^ ack_old;
-
-	wire [`SIZE-1:0] data_to_send;
-
-	assign data_to_send = 4;
 
 	always @(posedge clk or posedge reset) begin
 
@@ -38,10 +34,10 @@ module source2 (clk, reset, req, ack, data);
 
 			ack_old <= ack;
 
-			if (!busy && flits<max_flits) begin
+			if (!busy && flits<MAX_FLITS) begin
 
-				// data <= destination;
-				data <= data_to_send;
+				// data <= DESTINATION;
+				data <= PAYLOAD;
 
 				req <= ~req;
 
@@ -49,11 +45,11 @@ module source2 (clk, reset, req, ack, data);
 
 				busy <= 1;
 
-				$display ("#%3d, %10s [%1d] : sending <%g> to destination <%g>", $time, "Source", id, data_to_send, destination);
+				$display ("#%3d, %10s [%1d] : sending <%g> to DESTINATION <%g>", $time, "Source", ID, PAYLOAD, DESTINATION);
 
 			end else if (busy & ack_received) begin
 
-				$display ("#%3d, %10s [%1d] : received ack", $time, "Source", id);
+				$display ("#%3d, %10s [%1d] : received ack", $time, "Source", ID);
 
 				busy <= 0;
 

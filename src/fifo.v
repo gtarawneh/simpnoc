@@ -1,34 +1,28 @@
-`ifndef SIZE
-	`define SIZE 8
-`endif
-
-`define FIFO_DEPTH_LOG2 4
-
-`define FIFO_DEPTH (1<<`FIFO_DEPTH_LOG2)
-
 module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 
-	parameter id = -s1;
+	parameter ID = -1;
+	parameter SIZE = 8;
+	parameter DEPTH_LOG2 = 4;
+
+	localparam DEPTH = 1 ** DEPTH_LOG2;
 
 	input clk, reset, write, read;
 
 	output full, empty;
 
-	reg [`SIZE-1:0] mem [`FIFO_DEPTH-1:0];
+	reg [SIZE-1:0] memory [DEPTH-1:0];
 
-	reg [`FIFO_DEPTH_LOG2-1:0] read_ptr;
+	reg [DEPTH_LOG2-1:0] read_ptr;
 
-	reg [`FIFO_DEPTH_LOG2-1:0] write_ptr;
+	reg [DEPTH_LOG2-1:0] write_ptr;
 
-	wire [`FIFO_DEPTH_LOG2-1:0] read_ptr_p1; assign read_ptr_p1 = read_ptr + 1;
+	wire [DEPTH_LOG2-1:0] read_ptr_p1; assign read_ptr_p1 = read_ptr + 1;
 
-	wire [`FIFO_DEPTH_LOG2-1:0] write_ptr_p1; assign write_ptr_p1 = write_ptr + 1;
+	wire [DEPTH_LOG2-1:0] write_ptr_p1; assign write_ptr_p1 = write_ptr + 1;
 
-	reg [`FIFO_DEPTH_LOG2:0] count;
+	input [SIZE-1:0] item_in;
 
-	input [`SIZE-1:0] item_in;
-
-	output [`SIZE-1:0] item_out;
+	output [SIZE-1:0] item_out;
 
 	reg full, empty;
 
@@ -46,10 +40,8 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 
 			full <= 0;
 
-			count <= 0;
-
-			for (i=0; i<`FIFO_DEPTH; i=i+1) begin
-				mem[i] <= 0;
+			for (i=0; i<DEPTH; i=i+1) begin
+				memory[i] <= 0;
 			end
 
 		end else begin
@@ -62,14 +54,13 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 
 				if (read_ptr_p1 == write_ptr) empty <= 1;
 
-				if (id == 0)
-					$display("#%3d, %10s [%1d] : popped (read_ptr = %g, write_ptr = %g, empty = %g)", $time, "FIFO", id, read_ptr_p1, write_ptr, read_ptr_p1 == write_ptr);
+				$display("#%3d, %10s [%1d] : popped (read_ptr = %g, write_ptr = %g, empty = %g)", $time, "FIFO", ID, read_ptr_p1, write_ptr, read_ptr_p1 == write_ptr);
 
 			end
 
 			if (write & !full) begin
 
-				mem [write_ptr] <= item_in;
+				memory [write_ptr] <= item_in;
 
 				empty <= 0;
 
@@ -77,24 +68,14 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 
 				if (read_ptr == write_ptr_p1) full <= 1;
 
-				if (id == 0)
-					$display("#%3d, %10s [%1d] : pushed <%g> (read_ptr = %g, write_ptr = %g, full = %g)", $time, "FIFO", id, item_in, read_ptr, write_ptr_p1, read_ptr == write_ptr_p1);
+				$display("#%3d, %10s [%1d] : pushed <%g> (read_ptr = %g, write_ptr = %g, full = %g)", $time, "FIFO", ID, item_in, read_ptr, write_ptr_p1, read_ptr == write_ptr_p1);
 
 			end
-
-			if (actual_read & !actual_write)
-				count <= count-1;
-			else if (actual_write & !actual_read)
-				count <= count+1;
-
 
 		end
 
 	end
 
-	assign item_out = mem [read_ptr];
-
-	wire actual_read = read & !empty;
-	wire actual_write = write & !full;
+	assign item_out = memory [read_ptr];
 
 endmodule

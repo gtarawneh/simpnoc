@@ -1,15 +1,6 @@
 // this modules picks items from a fifo, one at a time, and sends them to one
 // of several tx transceivers that use 2-phase handshakes
 
-// `ifndef _inc_constants_
-// 	`define _inc_constants_
-// 	`include "constants_2D.v"
-// `endif
-
-`ifndef SIZE
-	`define SIZE 8
-`endif
-
 module tx_logic_2 (
 		clk,
 		reset,
@@ -23,7 +14,11 @@ module tx_logic_2 (
 		table_data
 	);
 
-	parameter id = -1;
+	parameter ID = -1; // module id
+	parameter SIZE = 8; // data bits
+	parameter PORT_COUNT = 5; // number of ports
+	parameter STATE_BITS = 2; // number of state bits
+	parameter DESTINATION_BITS = 3; // number of bits to specify port
 
 	input clk, reset;
 
@@ -31,32 +26,32 @@ module tx_logic_2 (
 
 	output reg fifo_read;
 	input fifo_empty;
-	input [`SIZE-1:0] fifo_item_out;
+	input [SIZE-1:0] fifo_item_out;
 
 	// fifo_pop interface:
 
-	output reg [4:0] fifo_pop_req;
-	input [4:0] fifo_pop_ack;
-	output [5*`SIZE-1:0] fifo_pop_data;
+	output reg [PORT_COUNT-1:0] fifo_pop_req;
+	input [PORT_COUNT-1:0] fifo_pop_ack;
+	output [PORT_COUNT*SIZE-1:0] fifo_pop_data;
 
 	// routing table
 
-	output reg [`SIZE-1:0] table_addr;
-	input [2:0] table_data;
+	output reg [SIZE-1:0] table_addr;
+	input [DESTINATION_BITS-1:0] table_data;
 
 	// internal nets
 
-	reg [1:0] state;
+	reg [STATE_BITS-1:0] state;
 
-	reg [`SIZE-1:0] fifo_pop_data_arr [4:0];
+	reg [SIZE-1:0] fifo_pop_data_arr [PORT_COUNT-1:0];
 
-	reg [4:0] tbusy; // tx transceiver busy
+	reg [PORT_COUNT-1:0] tbusy; // tx transceiver busy
 
-	reg [4:0] fifo_pop_ack_old;
+	reg [PORT_COUNT-1:0] fifo_pop_ack_old;
 
-	wire [2:0] destination;
+	wire [DESTINATION_BITS-1:0] destination;
 
-	wire [4:0] ack_received;
+	wire [PORT_COUNT-1:0] ack_received;
 
 	assign ack_received = (fifo_pop_ack ^ fifo_pop_ack_old);
 
@@ -66,9 +61,9 @@ module tx_logic_2 (
 
 	genvar k;
 	generate
-		for (k=0; k<5; k=k+1) begin
-			localparam LSB = `SIZE * k;
-			localparam MSB = LSB + `SIZE - 1;
+		for (k=0; k<PORT_COUNT; k=k+1) begin
+			localparam LSB = SIZE * k;
+			localparam MSB = LSB + SIZE - 1;
 			assign fifo_pop_data[MSB:LSB] = fifo_pop_data_arr[k];
 		end
 	endgenerate
@@ -104,8 +99,8 @@ module tx_logic_2 (
 
 			tbusy <= tbusy & ~ack_received;
 
-			for (i=0; i<5; i=i+1) if (ack_received[i])
-				$display("#%3d, %10s [%1d] : received ack from port <%g>", $time, "TX_LOGIC", id, i);
+			for (i=0; i<PORT_COUNT; i=i+1) if (ack_received[i])
+				$display("#%3d, %10s [%1d] : received ack from port <%g>", $time, "TX_LOGIC", ID, i);
 
 			// Next, attempt to send the current fifo item:
 
@@ -117,7 +112,7 @@ module tx_logic_2 (
 
 				if (~fifo_empty) begin
 
-					$display("#%3d, %10s [%1d] : found item <%g> in fifo, fetching routing address", $time, "TX_LOGIC", id, fifo_item_out);
+					$display("#%3d, %10s [%1d] : found item <%g> in fifo, fetching routing address", $time, "TX_LOGIC", ID, fifo_item_out);
 
 					table_addr <= fifo_item_out;
 
@@ -131,7 +126,7 @@ module tx_logic_2 (
 
 				if (tbusy[destination] == 0) begin
 
-					$display("#%3d, %10s [%1d] : found destination port is <%g>, sending", $time, "TX_LOGIC", id, destination);
+					$display("#%3d, %10s [%1d] : found destination port is <%g>, sending", $time, "TX_LOGIC", ID, destination);
 
 					fifo_pop_data_arr[destination] <= fifo_item_out; // set data bits
 
