@@ -15,7 +15,7 @@ module testbench_simple();
 	initial begin
 		// $dumpfile("output/dump.vcd");
 		// $dumpvars(0, testbench_simple);
-		#10
+		#20
 		$finish;
 	end
 
@@ -68,11 +68,16 @@ module testbench_simple();
 
 	wire [`SIZE-1:0] src_data;
 
-	source2 #(.max_flits(2)) src1 (clk, reset, src_req, src_ack, src_data);
+	source2 #(.max_flits(1)) src1 (clk, reset, src_req, src_ack, src_data);
 
 	assign rx_req[0][0] = src_req;
-	assign rx_ack[0][0] = src_ack;
+	assign src_ack = rx_ack[0][0];
 	assign rx_data[0][`SIZE-1:0] = src_data;
+
+	assign rx_req[0][1] = 0;
+	assign rx_req[0][2] = 0;
+	assign rx_req[0][3] = 0;
+	assign rx_req[0][4] = 0;
 	assign rx_data[0][5*`SIZE-1:`SIZE] = 0;
 
 	// always @(posedge clk) begin
@@ -83,6 +88,15 @@ module testbench_simple();
 
 	// sink
 
-	// sink2 snk1 (clk, reset, src_req, src_ack, src_data);
+	wire [`SIZE-1:0] snk_data;
+
+	// always @(posedge clk)
+	// 	$display("  -- %g", snk_req);
+
+	assign snk_data = tx_data[0][`SIZE-1:0];
+	assign snk_req = tx_req[0][0];
+	assign tx_ack[0][0] = snk_ack;
+
+	sink2 snk1 (clk, reset, snk_req, snk_ack, snk_data);
 
 endmodule

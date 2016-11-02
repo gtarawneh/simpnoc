@@ -18,10 +18,10 @@
 	`include "tx_logic2.v"
 `endif
 
-`ifndef _inc_transceiver
-	`define _inc_transceiver
-	`include "transceiver.v"
-`endif
+// `ifndef _inc_transceiver
+// 	`define _inc_transceiver
+// 	`include "transceiver.v"
+// `endif
 
 `ifndef _inc_transceiver_dummy
 	`define _inc_transceiver_dummy
@@ -85,7 +85,6 @@ module router2 (
 	wire [5*`SIZE-1:0] fifo_pop_data;
 	wire fifo_read;
 	wire fifo_empty;
-	wire [`SIZE-1:0] fifo_data_out;
 
 	// RX :
 	// -----------------------------------------------------------------
@@ -101,10 +100,10 @@ module router2 (
 		for (i=0; i<5; i=i+1) begin : RX_BLOCK
 			wire [`SIZE-1:0] rx_data_item;
 			wire [`SIZE-1:0] fifo_push_data_item;
-			localparam BH = `SIZE * i + (`SIZE-1);
-			localparam BL = `SIZE * i;
-			assign rx_data_item = rx_data[BH:BL];
-			assign fifo_push_data[BH:BL] = fifo_push_data_item;
+			localparam MSB = `SIZE * (i+1) - 1;
+			localparam LSB = `SIZE * i;
+			assign rx_data_item = rx_data[MSB:LSB];
+			assign fifo_push_data[MSB:LSB] = fifo_push_data_item;
 			transceiver_dummy #(.id(id)) rx (
 				.clk(clk),
 				.reset(reset),
@@ -124,20 +123,8 @@ module router2 (
 	defparam RX_BLOCK[3].rx.port = "West";
 	defparam RX_BLOCK[4].rx.port = "Local";
 
-	always @(posedge clk) begin
-
-		if (id == 0) begin
-
-			$display("#%3d, Router [%1d] : rx_req[0] = %g, rx_ack[0] = %g, fifo_write = %g", $time, id, rx_req[0], rx_ack[0], fifo_write);
-
-		end
-
-	end
-
 	// see this for referring to modules in generate blocks:
 	// https://stackoverflow.com/questions/36711849/defparam-inside-generate-block-in-veilog
-
-	wire [`SIZE-1:0] fifo_data_in;
 
 	rx_logic_2 #(.id(id)) rl (
 		.clk(clk),
@@ -147,7 +134,7 @@ module router2 (
 		.fifo_push_data(fifo_push_data),
 		.fifo_write(fifo_write),
 		.fifo_full(fifo_full),
-		.fifo_data_in(fifo_data_in)
+		.fifo_item_in(fifo_item_in)
 	);
 
 	// -----------------------------------------------------------------
@@ -163,30 +150,20 @@ module router2 (
 		.read(fifo_read)
 	);
 
-	always @(posedge clk) begin
-
-		$display("#%3d, Router [%1d] : fifo_data_in = %d", $time, id, fifo_data_in);
-
-		if (fifo_write)
-			$display("#%3d, Router [%1d] : pushed %d to fifo", $time, id, fifo_data_in);
-
-		if (fifo_read)
-			$display("#%3d, Router [%1d] : popped %d from fifo", $time, id, fifo_item_out);
-
-	end
-
 	// TX :
 	// -----------------------------------------------------------------
 
-	tx_logic_2 tl (
+	tx_logic_2 #(id) tl (
 		.clk(clk),
 		.reset(reset),
 		.fifo_read(fifo_read),
 		.fifo_empty(fifo_empty),
-		.fifo_data_out(fifo_data_out),
+		.fifo_item_out(fifo_item_out),
 		.fifo_pop_req(fifo_pop_req),
 		.fifo_pop_ack(fifo_pop_ack),
-		.fifo_pop_data(fifo_pop_data)
+		.fifo_pop_data(fifo_pop_data),
+		.table_addr(table_addr),
+		.table_data(table_data)
 	);
 
 	generate
@@ -194,10 +171,10 @@ module router2 (
 		for (j=0; j<5; j=j+1) begin : TX_BLOCK
 			wire [`SIZE-1:0] fifo_pop_data_item;
 			wire [`SIZE-1:0] tx_data_item;
-			localparam BH = `SIZE * j + (`SIZE-1);
-			localparam BL = `SIZE * j;
-			assign fifo_pop_data_item = fifo_pop_data[BH:BL];
-			assign tx_data_item = tx_data[BH:BL];
+			localparam MSB = `SIZE * (j+1) - 1;
+			localparam LSB = `SIZE * j;
+			assign fifo_pop_data_item = fifo_pop_data[MSB:LSB];
+			assign tx_data[MSB:LSB] = tx_data_item;
 			transceiver_dummy #(.id(id)) tx (
 				.clk(clk),
 				.reset(reset),

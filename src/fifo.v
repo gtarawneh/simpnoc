@@ -63,7 +63,7 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 				if (read_ptr_p1 == write_ptr) empty <= 1;
 
 				if (id == 0)
-					$display("#%3d, FIFO [%1d] : item popped", $time, id);
+					$display("#%3d, %10s [%1d] : popped (read_ptr = %g, write_ptr = %g, empty = %g)", $time, "FIFO", id, read_ptr_p1, write_ptr, read_ptr_p1 == write_ptr);
 
 			end
 
@@ -78,7 +78,7 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 				if (read_ptr == write_ptr_p1) full <= 1;
 
 				if (id == 0)
-					$display("#%3d, FIFO [%1d] : pushed %d", $time, id, item_in);
+					$display("#%3d, %10s [%1d] : pushed <%g> (read_ptr = %g, write_ptr = %g, full = %g)", $time, "FIFO", id, item_in, read_ptr, write_ptr_p1, read_ptr == write_ptr_p1);
 
 			end
 
@@ -97,7 +97,4 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 	wire actual_read = read & !empty;
 	wire actual_write = write & !full;
 
-
-
 endmodule
-

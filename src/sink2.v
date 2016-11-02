@@ -24,7 +24,7 @@ module sink2 (clk, reset, req, ack, data);
 
 			if (req ^ req_old) begin
 
-				$display("[%g] sink %g: received %g", $time, id, data);
+				$display("#%3d, %10s [%1d] : received <%g>, acknowledging", $time, "Sink", id, data);
 
 				ack <= ~ack;
 

@@ -15,11 +15,15 @@ module tx_logic_2 (
 		reset,
 		fifo_read,
 		fifo_empty,
-		fifo_data_out,
+		fifo_item_out,
 		fifo_pop_req,
 		fifo_pop_ack,
 		fifo_pop_data,
+		table_addr,
+		table_data
 	);
+
+	parameter id = -1;
 
 	input clk, reset;
 
@@ -27,7 +31,7 @@ module tx_logic_2 (
 
 	output reg fifo_read;
 	input fifo_empty;
-	input [`SIZE-1:0] fifo_data_out;
+	input [`SIZE-1:0] fifo_item_out;
 
 	// fifo_pop interface:
 
@@ -42,7 +46,7 @@ module tx_logic_2 (
 
 	// internal nets
 
-	reg state;
+	reg [1:0] state;
 
 	reg [`SIZE-1:0] fifo_pop_data_arr [4:0];
 
@@ -63,9 +67,9 @@ module tx_logic_2 (
 	genvar k;
 	generate
 		for (k=0; k<5; k=k+1) begin
-			localparam LB = `SIZE * k;
-			localparam HB = LB + `SIZE - 1;
-			assign fifo_pop_data[HB:LB] = fifo_pop_data_arr[k];
+			localparam LSB = `SIZE * k;
+			localparam MSB = LSB + `SIZE - 1;
+			assign fifo_pop_data[MSB:LSB] = fifo_pop_data_arr[k];
 		end
 	endgenerate
 
@@ -73,6 +77,7 @@ module tx_logic_2 (
 
 	localparam STATE_IDLE = 0;
 	localparam STATE_GETTING_ADDR = 1;
+	localparam STATE_WAIT_ACK = 2;
 
 	always @(posedge clk or posedge reset) begin
 
@@ -86,46 +91,66 @@ module tx_logic_2 (
 
 			tbusy <= 0;
 
-		end else begin
+			state <= STATE_IDLE;
 
-			if (fifo_empty) begin
+		end else begin : BLOCK1
 
-				fifo_read <= 0;
+			// First, check if any tx transeivers received an ack and
+			// clear the respective bits in tbusy:
 
-			end else begin : BLOCK1
+			integer i;
 
-				// First, check if any tx transeivers received an ack and
-				// clear the respective bits in tbusy:
+			fifo_pop_ack_old <= fifo_pop_ack;
 
-				tbusy <= tbusy & ~ack_received;
+			tbusy <= tbusy & ~ack_received;
 
-				// Next, attempt to send the current fifo item:
+			for (i=0; i<5; i=i+1) if (ack_received[i])
+				$display("#%3d, %10s [%1d] : received ack from port <%g>", $time, "TX_LOGIC", id, i);
 
-				if (state == STATE_IDLE) begin
+			// Next, attempt to send the current fifo item:
 
-					// need to fetch destination port data
+			if (state == STATE_IDLE) begin
 
-					// (address is the same as fifo item content for now)
+				// need to fetch destination port data
 
-					table_addr <= fifo_data_out;
+				// (address is the same as fifo item content for now)
+
+				if (~fifo_empty) begin
+
+					$display("#%3d, %10s [%1d] : found item <%g> in fifo, fetching routing address", $time, "TX_LOGIC", id, fifo_item_out);
+
+					table_addr <= fifo_item_out;
 
 					state <= STATE_GETTING_ADDR;
 
-				end else if (state == STATE_GETTING_ADDR) begin : BLOCK2
+				end
 
-					// got destination port data, send to transceiver (if not busy)
+			end else if (state == STATE_GETTING_ADDR) begin : BLOCK2
 
-					if (!tbusy[destination]) begin
+				// got destination port data, send to transceiver (if not busy)
 
-						fifo_pop_data_arr[destination] <= fifo_data_out; // set data bits
+				if (tbusy[destination] == 0) begin
 
-						fifo_pop_req[destination] <= ~fifo_pop_req[destination]; // initiate request
+					$display("#%3d, %10s [%1d] : found destination port is <%g>, sending", $time, "TX_LOGIC", id, destination);
 
-						tbusy[destination] <= 1; // mark this transceiver as busy
+					fifo_pop_data_arr[destination] <= fifo_item_out; // set data bits
 
-					end
+					fifo_pop_req[destination] <= ~fifo_pop_req[destination]; // initiate request
+
+					tbusy[destination] <= 1; // mark this transceiver as busy
+
+					state <= STATE_WAIT_ACK;
+
+					fifo_read <= 1;
 
 				end
+
+			end else if (state == STATE_WAIT_ACK) begin
+
+				fifo_read <= 0;
+
+				if (~tbusy[destination])
+					state <= STATE_IDLE;
 
 			end
 
