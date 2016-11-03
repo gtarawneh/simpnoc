@@ -46,6 +46,8 @@ def insertTerminatorTX(router, port):
 
 def insertRouter(id):
 	code = """
+		// router %ID
+
 		router2 #(
 			.ID(%ID),
 			.SIZE(SIZE),
@@ -64,15 +66,21 @@ def insertRouter(id):
 			table_addr[%ID],
 			table_data[%ID]
 		);
+
 		assign table_data[%ID] = 0; // dummy routing table
 	"""
 	# print(dedent(code).replace("%ID", str(id)))
-	insertCode(code, {"%ID": str(id)})
+	return insertCode(code, {"%ID": str(id)})
 
 def insertCode(code, replaceDict):
 	code = dedent(code)
 	for identifier in replaceDict.keys():
 		code = code.replace(identifier, replaceDict[identifier])
-	print(code)
+	return code
 
-insertRouter(0)
+
+def main():
+	with open("output/gen_routers_test.v", "w") as fid:
+		for i in range(1):
+			fid.write(insertRouter(i))
+main()
