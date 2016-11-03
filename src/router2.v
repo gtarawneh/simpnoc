@@ -1,22 +1,10 @@
-`ifndef _inc_rx_logic2_
-	`define _inc_rx_logic2_
-	`include "rx_logic2.v"
-`endif
+`ifndef _inc_router2_
+`define _inc_router2_
 
-`ifndef _inc_fifo_
-	`define _inc_fifo_
-	`include "fifo.v"
-`endif
-
-`ifndef _inc_tx_logic2_
-	`define _inc_tx_logic2_
-	`include "tx_logic2.v"
-`endif
-
-`ifndef _inc_transceiver_dummy
-	`define _inc_transceiver_dummy
-	`include "transceiver_dummy.v"
-`endif
+`include "rx_logic2.v"
+`include "fifo.v"
+`include "tx_logic2.v"
+`include "transceiver_dummy.v"
 
 module router2 (
 		clk,
@@ -31,75 +19,60 @@ module router2 (
 		table_data
 	);
 
+	// parameters
+
 	parameter ID = -1; // router id
 	parameter SIZE = 8; // data bits
 	parameter PORT_COUNT = 5; // number of ports
 	parameter PORT_NAMES = {"North", "South", "East", "West", "Local"};
+	parameter DESTINATION_BITS = 3; // number of bits to specify port
+
+	// module port declarations
 
 	input clk, reset;
-
-	output [SIZE-1:0] table_addr;
-
-	input [`BITS_DIR-1:0] table_data;
-
-	// tx transceiver signals:
-
-	output [PORT_COUNT-1:0] tx_req;
-
+	input [DESTINATION_BITS-1:0] table_data;
 	input [PORT_COUNT-1:0] tx_ack;
-
-	output [PORT_COUNT*SIZE-1:0] tx_data;
-
-	// rx transceiver signals:
-
 	input [PORT_COUNT-1:0] rx_req;
-
+	input [PORT_COUNT*SIZE-1:0] rx_data;
+	output [SIZE-1:0] table_addr;
+	output [PORT_COUNT-1:0] tx_req;
+	output [PORT_COUNT*SIZE-1:0] tx_data;
 	output [PORT_COUNT-1:0] rx_ack;
 
-	input [PORT_COUNT*SIZE-1:0] rx_data;
-
-	// Interface and internal nets:
-	// -----------------------------------------------------------------
+	// internet nets
 
 	wire [SIZE-1:0] fifo_item_in;
-
 	wire [SIZE-1:0] fifo_item_out;
-
-	// tx nets:
-
 	wire [PORT_COUNT-1:0] fifo_pop_req;
 	wire [PORT_COUNT-1:0] fifo_pop_ack;
 	wire [PORT_COUNT*SIZE-1:0] fifo_pop_data;
 	wire fifo_read;
 	wire fifo_empty;
-
-	// RX :
-	// -----------------------------------------------------------------
-
 	wire [PORT_COUNT-1:0] fifo_push_req;
-
 	wire [PORT_COUNT-1:0] fifo_push_ack;
-
 	wire [PORT_COUNT*SIZE-1:0] fifo_push_data;
+
+	// rx transceivers
 
 	generate
 		genvar i;
 		for (i=0; i<5; i=i+1) begin : RX_BLOCK
-			wire [SIZE-1:0] rx_data_item;
+			wire [SIZE-1:0] org_rx_data_item;
 			wire [SIZE-1:0] fifo_push_data_item;
 			localparam MSB = SIZE * (i+1) - 1;
 			localparam LSB = SIZE * i;
-			assign rx_data_item = rx_data[MSB:LSB];
+			assign org_rx_data_item = rx_data[MSB:LSB];
 			assign fifo_push_data[MSB:LSB] = fifo_push_data_item;
 			transceiver_dummy #(
 				.ID(ID),
-				.SIZE(SIZE)
+				.SIZE(SIZE),
+				.PORT(PORT_NAMES[i])
 			) rx (
 				.clk(clk),
 				.reset(reset),
 				.req1(rx_req[i]),
 				.ack1(rx_ack[i]),
-				.data1(rx_data_item),
+				.data1(org_rx_data_item),
 				.req2(fifo_push_req[i]),
 				.ack2(fifo_push_ack[i]),
 				.data2(fifo_push_data_item)
@@ -107,14 +80,7 @@ module router2 (
 		end
 	endgenerate
 
-	defparam RX_BLOCK[0].rx.PORT = "North";
-	defparam RX_BLOCK[1].rx.PORT = "South";
-	defparam RX_BLOCK[2].rx.PORT = "East";
-	defparam RX_BLOCK[3].rx.PORT = "West";
-	defparam RX_BLOCK[4].rx.PORT = "Local";
-
-	// see this for referring to modules in generate blocks:
-	// https://stackoverflow.com/questions/36711849/defparam-inside-generate-block-in-veilog
+	// rx logic
 
 	rx_logic_2 #(
 		.ID(ID),
@@ -131,7 +97,7 @@ module router2 (
 		.fifo_item_in(fifo_item_in)
 	);
 
-	// -----------------------------------------------------------------
+	// fifo
 
 	fifo #(
 		.ID(ID),
@@ -148,8 +114,7 @@ module router2 (
 		.read(fifo_read)
 	);
 
-	// TX :
-	// -----------------------------------------------------------------
+	// tx logic
 
 	tx_logic_2 #(
 		.ID(ID),
@@ -167,6 +132,8 @@ module router2 (
 		.table_addr(table_addr),
 		.table_data(table_data)
 	);
+
+	// tx transceivers
 
 	generate
 		genvar j;
@@ -195,3 +162,5 @@ module router2 (
 	endgenerate
 
 endmodule
+
+`endif

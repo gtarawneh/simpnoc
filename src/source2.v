@@ -1,3 +1,6 @@
+`ifndef _inc_source2_
+`define _inc_source2_
+
 module source2 (clk, reset, req, ack, data);
 
 	parameter ID = 0;
@@ -60,3 +63,5 @@ module source2 (clk, reset, req, ack, data);
 	end
 
 endmodule
+
+`endif

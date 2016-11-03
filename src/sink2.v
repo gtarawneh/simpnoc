@@ -1,3 +1,6 @@
+`ifndef _inc_sink2_
+`define _inc_sink2_
+
 module sink2 (clk, reset, req, ack, data);
 
 	parameter ID = 0;
@@ -35,3 +38,5 @@ module sink2 (clk, reset, req, ack, data);
 	end
 
 endmodule
+
+`endif

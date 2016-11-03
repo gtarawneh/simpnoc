@@ -1,10 +1,5 @@
 `timescale 1ns/1ps
 
-`ifndef _inc_constants_
-	`define _inc_constants_
-	`include "constants_2D.v"
-`endif
-
 `include "generator.v"
 `include "router2.v"
 `include "source2.v"
@@ -21,6 +16,7 @@ module testbench_simple();
 
 	localparam SIZE = 8;
 	localparam PORT_COUNT = 5; // number of ports
+	localparam DESTINATION_BITS = 3; // number of bits to specify port
 
 	wire clk, reset;
 
@@ -28,7 +24,7 @@ module testbench_simple();
 
 	wire [SIZE-1:0] table_addr [1:0];
 
-	wire [`BITS_DIR-1:0] table_data [1:0];
+	wire [DESTINATION_BITS-1:0] table_data [1:0];
 
 	// router tx transceiver signals:
 
@@ -52,7 +48,8 @@ module testbench_simple();
 			router2 #(
 				.ID(i),
 				.SIZE(SIZE),
-				.PORT_COUNT(5)
+				.PORT_COUNT(5),
+				.DESTINATION_BITS(3)
 			) ri (
 				clk,
 				reset,

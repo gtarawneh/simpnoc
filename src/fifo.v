@@ -1,3 +1,6 @@
+`ifndef _inc_fifo_
+`define _inc_fifo_
+
 module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 
 	parameter ID = -1;
@@ -79,3 +82,5 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 	assign item_out = memory [read_ptr];
 
 endmodule
+
+`endif

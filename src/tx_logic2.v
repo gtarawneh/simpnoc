@@ -1,3 +1,6 @@
+`ifndef _inc_tx_logic2_
+`define _inc_tx_logic2_
+
 // this modules picks items from a fifo, one at a time, and sends them to one
 // of several tx transceivers that use 2-phase handshakes
 
@@ -154,3 +157,5 @@ module tx_logic_2 (
 	end
 
 endmodule
+
+`endif

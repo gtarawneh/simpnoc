@@ -1,3 +1,6 @@
+`ifndef _inc_generator_
+`define _inc_generator_
+
 module generator (clk, reset);
 
 	output reg clk, reset;
@@ -15,3 +18,5 @@ module generator (clk, reset);
 	end
 
 endmodule
+
+`endif

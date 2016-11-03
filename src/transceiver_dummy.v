@@ -1,3 +1,6 @@
+`ifndef _inc_transceiver_dummy_
+`define _inc_transceiver_dummy_
+
 // This module is an intermediate for two entities communicating through a two
 // phase handshake. Signals with postfix 1 belong to the channel with the
 // sending entity (i.e. req1 asks the module to transmit data1) and those with
@@ -35,3 +38,5 @@ module transceiver_dummy (clk, reset, req1, ack1, data1, req2, ack2, data2);
 	assign data2 = data1;
 
 endmodule
+
+`endif
