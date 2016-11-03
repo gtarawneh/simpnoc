@@ -38,7 +38,7 @@ module source2 (clk, reset, req, ack, data);
 				req <= ~req;
 				flits <= (flits<128) ? flits + 1 : flits;
 				busy <= 1;
-				$display ("#%3d, %10s [%1d] : sending <%g> to DESTINATION <%g>", $time, "Source", ID, PAYLOAD, DESTINATION);
+				$display ("#%3d, %10s [%1d] : sending <%g> to destination <%g>", $time, "Source", ID, PAYLOAD, DESTINATION);
 
 			end else if (busy & ack_received) begin
 

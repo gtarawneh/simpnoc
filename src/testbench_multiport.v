@@ -4,11 +4,12 @@
 `include "router2.v"
 `include "source2.v"
 `include "sink2.v"
+`include "connector.v"
 
 module testbench_multiport();
 
 	localparam SIZE = 8; // data bits
-	localparam PORT_COUNT = 3; // number of ports
+	localparam PORT_COUNT = 1; // number of ports
 	localparam DESTINATION_BITS = 3; // number of bits to specify port
 	localparam DURATION = 50; // duration of simulation (time units)
 	localparam DEPTH_LOG2 = 4;
@@ -71,11 +72,20 @@ module testbench_multiport();
 				.ack(src_ack),
 				.data(src_data)
 			);
-			assign rx_req[j] = src_req;
-			assign src_ack = rx_ack[j];
-			localparam LSB = j * SIZE;
-			localparam MSB = (j+1) * SIZE - 1;
-			assign rx_data[MSB:LSB] = src_data;
+			connector #(
+				.SIZE(SIZE),
+				.TX_PORT_COUNT(1),
+				.RX_PORT_COUNT(PORT_COUNT),
+				.TX_PORT(0),
+				.RX_PORT(j)
+			) con1 (
+				.tx_req(src_req),
+				.tx_ack(src_ack),
+				.tx_data(src_data),
+				.rx_req(rx_req),
+				.rx_ack(rx_ack),
+				.rx_data(rx_data)
+			);
 		end
 	endgenerate
 
