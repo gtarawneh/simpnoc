@@ -12,8 +12,9 @@ styles = {
 	'read_ptr|write_ptr|full|empty': ('magenta', []),
 	'TX_LOGIC|RX_LOGIC': ('cyan',[]),
 	'Sink': ('red', []),
-	'sending|pushing|fetching|acknowledging': (None, ['bold']),
-	'received|pushed|popped|found': (None, ['bold']),
+	'received|sending|pushing|fetching|acknowledging': (None, ['bold']),
+	'pushed|popped': ('red', ['bold']),
+	'found': (None, ['bold']),
 	'!!': ('red', ['bold']),
 };
 

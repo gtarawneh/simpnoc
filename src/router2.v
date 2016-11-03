@@ -26,6 +26,7 @@ module router2 (
 	parameter PORT_COUNT = 5; // number of ports
 	parameter PORT_NAMES = {"North", "South", "East", "West", "Local"};
 	parameter DESTINATION_BITS = 3; // number of bits to specify port
+	parameter DEPTH_LOG2 = 4;
 
 	// module port declarations
 
@@ -56,7 +57,7 @@ module router2 (
 
 	generate
 		genvar i;
-		for (i=0; i<5; i=i+1) begin : RX_BLOCK
+		for (i=0; i<PORT_COUNT; i=i+1) begin : RX_BLOCK
 			wire [SIZE-1:0] org_rx_data_item;
 			wire [SIZE-1:0] fifo_push_data_item;
 			localparam MSB = SIZE * (i+1) - 1;
@@ -102,7 +103,7 @@ module router2 (
 	fifo #(
 		.ID(ID),
 		.SIZE(SIZE),
-		.DEPTH_LOG2(4)
+		.DEPTH_LOG2(DEPTH_LOG2)
 	) myfifo1 (
 		.clk(clk),
 		.reset(reset),

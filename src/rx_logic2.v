@@ -40,16 +40,15 @@ module rx_logic_2 (
 	// internal nets
 
 	wire [SIZE-1:0] fifo_push_data_arr [PORT_COUNT-1:0];
-	wire [2:0] selectedNum;
-	reg [PORT_COUNT-1:0] fifo_push_req_old = 0;
+	reg [PORT_COUNT-1:0] fifo_push_req_old;
 
 	// unpack arrays
 
 	genvar k;
 	generate
 		for (k=0; k<PORT_COUNT; k=k+1) begin
-			localparam LSB = 8 * k;
-			localparam MSB = LSB + SIZE-1;
+			localparam LSB = SIZE * k;
+			localparam MSB = SIZE * (k+1) - 1;
 			assign fifo_push_data_arr[k] = fifo_push_data[MSB:LSB];
 		end
 	endgenerate
@@ -89,10 +88,19 @@ module rx_logic_2 (
 					fifo_write = 1;
 					fifo_push_ack[port] = ~fifo_push_ack[port];
 					fifo_item_in = fifo_push_data_arr[port];
-					$display("#%3d, %10s [%1d] : received <%g> from port <%g>, acknowledging, pushing to fifo", $time, "RX_LOGIC", ID, fifo_item_in, port);
+					fifo_push_req_old[port] <= fifo_push_req[port];
+					$display(
+						{
+							"#%3d, %10s [%1d] : ",
+							"received <%g> from port <%g>, ",
+							"acknowledging, ",
+							"pushing to fifo"
+						},
+						$time, "RX_LOGIC", ID,
+						fifo_item_in, port
+					);
 				end
 
-				fifo_push_req_old <= fifo_push_req;
 
 			end
 
