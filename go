@@ -4,4 +4,4 @@ mkdir -p {build,output}
 
 OUT="build/a.out"
 
-iverilog -I src -I traffic -o $OUT src/testbench_multirouter.v && vvp $OUT
+iverilog -I src -I traffic -o $OUT src/noc.v && vvp $OUT
