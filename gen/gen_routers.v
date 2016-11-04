@@ -1,3 +1,5 @@
+genvar i;
+
 generate
 	for (i=0; i<ROUTER_COUNT; i=i+1) begin
 		router2 #(
