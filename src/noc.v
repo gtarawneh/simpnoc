@@ -11,8 +11,6 @@ module noc (input clk, input reset);
 	`include "gen_routers.v"
 	`include "gen_sources.v"
 	`include "gen_sinks.v"
-	`include "gen_rr_connections.v"
-	`include "gen_rs_connections.v"
-	`include "gen_sr_connections.v"
+	`include "gen_connections.v"
 
 endmodule

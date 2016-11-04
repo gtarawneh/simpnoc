@@ -1,2 +1,3 @@
 all:
-	./create_noc.py
+	./create_topology.py && ./create_noc.py
+
