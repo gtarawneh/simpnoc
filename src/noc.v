@@ -46,5 +46,6 @@ module noc();
 	`include "gen/gen_sinks.v"
 	`include "gen/gen_rr_connections.v"
 	`include "gen/gen_rs_connections.v"
+	`include "gen/gen_sr_connections.v"
 
 endmodule

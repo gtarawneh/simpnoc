@@ -121,10 +121,28 @@ def insertConnectionRS(router, sink, port):
 	return insertCode(code, reps)
 
 def insertTerminatorRX(router, port):
-	pass
+	code = """
+	// connection: rx terminator for router %ROUTER (port %PORT)
+
+	assign rx_req[%ROUTER][%PORT] = 0;
+	"""
+	reps = {
+		"%ROUTER" : str(router),
+		"%PORT" : str(port),
+	}
+	return insertCode(code, reps)
 
 def insertTerminatorTX(router, port):
-	pass
+	code = """
+	// connection: tx terminator for router %ROUTER (port %PORT)
+
+	assign tx_ack[%ROUTER][%PORT] = tx_req[%ROUTER][%PORT];
+	"""
+	reps = {
+		"%ROUTER" : str(router),
+		"%PORT" : str(port),
+	}
+	return insertCode(code, reps)
 
 
 def insertRouter(id):
@@ -167,4 +185,7 @@ def main():
 		fid.write(insertSource(5))
 		fid.write(insertConnectionSR(2, 3, 5))
 		fid.write(insertConnectionRS(2, 0, 0))
+		fid.write(insertTerminatorTX(2, 0))
+		fid.write(insertTerminatorRX(2, 0))
+
 main()
