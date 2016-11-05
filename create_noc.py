@@ -99,9 +99,9 @@ def insertConnectionSR(conInd, source, router, port):
 			.tx_req(src_req[%SOURCE]),
 			.tx_ack(src_ack[%SOURCE]),
 			.tx_data(src_data[%SOURCE]),
-			.rx_req(rx_req[0]),
-			.rx_ack(rx_ack[0]),
-			.rx_data(rx_data[0])
+			.rx_req(rx_req[%ROUTER]),
+			.rx_ack(rx_ack[%ROUTER]),
+			.rx_data(rx_data[%ROUTER])
 		);
 	"""
 	reps = {
