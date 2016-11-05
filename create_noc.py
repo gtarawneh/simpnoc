@@ -166,6 +166,20 @@ def insertRouter(id):
 	"""
 	return insertCode(code, {"%ID": str(id)})
 
+def insertParams():
+	code = """
+		localparam SIZE = 8; // data bits
+		localparam PORT_COUNT = 5; // number of ports
+		localparam DESTINATION_BITS = 3; // number of bits to specify port
+		localparam DEPTH_LOG2 = 4;
+		localparam ROUTER_COUNT = 16;
+		localparam SINK_COUNT = 16;
+		localparam SOURCE_COUNT = 16;
+	"""
+	reps = {
+	}
+	return insertCode(code, reps)
+
 def insertCode(code, replaceDict):
 	code = textwrap.dedent(code)
 	for identifier in replaceDict.keys():
@@ -209,30 +223,35 @@ def getPortIndex(portName):
 	return mappings[portName]
 
 def main():
-	file = "gen/noc.json"
-	with open(file) as fid:
+	noc_fil = "gen/noc.json"
+	routers_file = "gen/gen_routers.v"
+	params_file = "gen/gen_params.v"
+	connections_file = "gen/gen_connections.v"
+	sources_file = "gen/gen_sources.v"
+	sinks_file = "gen/gen_sinks.v"
+	with open(noc_fil) as fid:
 		topology = json.load(fid)
 	indMap = getIndexMap(topology, ["router", "source", "sink"])
 	routers = getTypeList(topology, "router")
 	sources = getTypeList(topology, "source")
 	sinks = getTypeList(topology, "sink")
-	with open("gen/gen_routers.v", "w") as fid:
+	with open(routers_file, "w") as fid:
 		for r in routers:
 			ind = indMap[r]
 			fid.write(insertRouter(ind))
-			print("Generated router %d ...." % ind)
-	with open("gen/gen_sinks.v", "w") as fid:
+		print("Generated %s" % routers_file)
+	with open(sinks_file, "w") as fid:
 		for s in sinks:
 			ind = indMap[s]
 			fid.write(insertSink(ind))
-			print("Generated sink %d ...." % ind)
-	with open("gen/gen_sources.v", "w") as fid:
+		print("Generated %s" % sinks_file)
+	with open(sources_file, "w") as fid:
 		for s in sources:
 			ind = indMap[s]
 			flits = topology[s]["flits"]
 			fid.write(insertSource(ind, s, flits))
-			print("Generated source %d ...." % ind)
-	with open("gen/gen_connections.v", "w") as fid:
+		print("Generated %s" % sources_file)
+	with open(connections_file, "w") as fid:
 		conInd = 0
 		for r in topology:
 			lClass = topology[r]["class"]
@@ -246,12 +265,16 @@ def main():
 				dClass = topology[destination]["class"]
 				dInd = indMap[destination]
 				str1 = insertConnection(conInd, ind, dInd, lClass, dClass, portInd, dPortInd)
-				print("Generated connection: %s %d (port %d)-> %s %d (port %d) ...." % (lClass, ind, portInd, dClass, dInd, dPortInd))
 				fid.write(str1)
 				conInd += 1
+		print("Generated %s" % connections_file)
+	with open(params_file, "w") as fid:
+		str1 = insertParams()
+		fid.write(str1)
+		print("Generated %s" % params_file)
 	n1 = len(routers)
 	n2 = len(sources)
 	n3 = len(sinks)
-	print("generated topology with %d routers, %d sources and %d sinks" % (n1, n2, n3))
+	print("Completed generating topology (%d routers, %d sources and %d sinks)" % (n1, n2, n3))
 
 main()
