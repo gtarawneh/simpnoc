@@ -1,5 +1,5 @@
 all:
-	@mkdir gen
+	@mkdir -p gen
 	@./create_topology.py && ./create_noc.py
 
 clean:

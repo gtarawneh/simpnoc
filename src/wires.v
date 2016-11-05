@@ -1,6 +1,6 @@
 wire clk, reset;
 wire [SIZE-1:0] table_addr [ROUTER_COUNT-1:0];
-wire [DESTINATION_BITS-1:0] table_data [ROUTER_COUNT-1:0];
+reg [DESTINATION_BITS-1:0] table_data [ROUTER_COUNT-1:0];
 wire [PORT_COUNT-1:0] tx_req [ROUTER_COUNT-1:0];
 wire [PORT_COUNT-1:0] tx_ack [ROUTER_COUNT-1:0];
 wire [PORT_COUNT*SIZE-1:0] tx_data [ROUTER_COUNT-1:0];

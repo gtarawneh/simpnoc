@@ -161,22 +161,40 @@ def insertRouter(id):
 			table_addr[%ID],
 			table_data[%ID]
 		);
-
-		assign table_data[%ID] = 0; // dummy routing table
 	"""
 	return insertCode(code, {"%ID": str(id)})
 
-def insertParams():
+def insertTable(id, table):
+	lines = [
+		"",
+		"// routing table (router %ID)",
+		"",
+		"always @(clk or reset or table_addr[%ID]) case (table_addr[%ID])"
+	]
+	for destination in sorted(table.keys()):
+		port = table[destination]
+		pStr = str(getPortIndex(port))
+		reps = {"%DEST" : destination, "%PORT": pStr}
+		code = "\t%-10s : table_data[%s] = %s;" % (destination, "%ID", pStr)
+		lines.append(code)
+	lines += ["endcase", ""]
+	code = '\n'.join(lines)
+	return insertCode(code, {"%ID": str(id)})
+
+def insertParams(routerCount, sourceCount, sinkCount):
 	code = """
 		localparam SIZE = 8; // data bits
 		localparam PORT_COUNT = 5; // number of ports
 		localparam DESTINATION_BITS = 3; // number of bits to specify port
 		localparam DEPTH_LOG2 = 4;
-		localparam ROUTER_COUNT = 16;
-		localparam SINK_COUNT = 16;
-		localparam SOURCE_COUNT = 16;
+		localparam ROUTER_COUNT = %ROUTERS;
+		localparam SINK_COUNT = %SINKS;
+		localparam SOURCE_COUNT = %SOURCES;
 	"""
 	reps = {
+		"%ROUTERS": str(routerCount),
+		"%SOURCES": str(sourceCount),
+		"%SINKS": str(sinkCount)
 	}
 	return insertCode(code, reps)
 
@@ -229,6 +247,7 @@ def main():
 	connections_file = "gen/gen_connections.v"
 	sources_file = "gen/gen_sources.v"
 	sinks_file = "gen/gen_sinks.v"
+	tables_file = "gen/gen_tables.v"
 	with open(noc_fil) as fid:
 		topology = json.load(fid)
 	indMap = getIndexMap(topology, ["router", "source", "sink"])
@@ -268,8 +287,18 @@ def main():
 				fid.write(str1)
 				conInd += 1
 		print("Generated %s" % connections_file)
+	with open(tables_file, "w") as fid:
+		for r in routers:
+			ind = indMap[r]
+			table = topology[r]["table"]
+			str1 = insertTable(ind, table)
+			fid.write(str1)
+		print("Generated %s" % tables_file)
 	with open(params_file, "w") as fid:
-		str1 = insertParams()
+		routerCount = len(routers)
+		sourceCount = len(sources)
+		sinkCount = len(sinks)
+		str1 = insertParams(routerCount, sourceCount, sinkCount)
 		fid.write(str1)
 		print("Generated %s" % params_file)
 	n1 = len(routers)

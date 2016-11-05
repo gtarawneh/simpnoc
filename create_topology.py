@@ -46,11 +46,18 @@ def main():
 		cons = {
 			"right": rightTerm if isBorderRight else rightRouter,
 			"left": leftTerm if isBorderLeft else leftRouter,
-			"top" : topTerm if isBorderTop else topRouter,
-			"bottom" : bottomTerm if isBorderBottom else bottomRouter,
+			"top": topTerm if isBorderTop else topRouter,
+			"bottom": bottomTerm if isBorderBottom else bottomRouter,
 			"local": localTerm
 		}
-		noc[id] = {"class": "router", "connections" : cons}
+		noc[id] = {
+			"class": "router",
+			"connections": cons,
+			"table": {
+				"0" : "right",
+				"default": "local"
+			}
+		}
 	# add local sinks
 	sinks = [(x,y) for x in range(width) for y in range(height)]
 	for x, y in sinks:
