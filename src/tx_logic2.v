@@ -49,7 +49,7 @@ module tx_logic_2 (
 	wire [DESTINATION_BITS-1:0] destination = table_data;
 	wire [PORT_COUNT-1:0] ack_received = fifo_pop_ack ^ fifo_pop_ack_old;
 
-	assign table_addr = fifo_pop_data;
+	assign table_addr = fifo_item_out;
 
 	// pack fifo_pop_data_arr into fifo_pop_data
 

@@ -37,15 +37,15 @@ def main():
 		isBorderRight = x == width-1
 		isBorderTop = y == height-1
 		isBorderBottom = y == 0
-		leftTerm = {"destination": getTerminatorID("rx", "left", y), "port": "0"}
-		rightTerm = {"destination": getTerminatorID("rx", "right", y), "port": "0"}
-		topTerm = {"destination": getTerminatorID("rx", "top", x), "port": "0"}
-		bottomTerm = {"destination": getTerminatorID("rx", "bottom", x), "port": "0"}
-		localTerm = {"destination": getSinkID(x, y), "port": "0"}
-		rightRouter = {"destination": getRouterID(x+1, y), "port": "left"}
-		leftRouter = {"destination": getRouterID(x-1, y), "port": "right"}
-		topRouter = {"destination": getRouterID(x, y+1), "port": "bottom"}
-		bottomRouter = {"destination": getRouterID(x, y-1), "port": "top"}
+		leftTerm = {"to": getTerminatorID("rx", "left", y), "port": "0"}
+		rightTerm = {"to": getTerminatorID("rx", "right", y), "port": "0"}
+		topTerm = {"to": getTerminatorID("rx", "top", x), "port": "0"}
+		bottomTerm = {"to": getTerminatorID("rx", "bottom", x), "port": "0"}
+		localTerm = {"to": getSinkID(x, y), "port": "0"}
+		rightRouter = {"to": getRouterID(x+1, y), "port": "left"}
+		leftRouter = {"to": getRouterID(x-1, y), "port": "right"}
+		topRouter = {"to": getRouterID(x, y+1), "port": "bottom"}
+		bottomRouter = {"to": getRouterID(x, y-1), "port": "top"}
 		cons = {
 			"right": rightTerm if isBorderRight else rightRouter,
 			"left": leftTerm if isBorderLeft else leftRouter,
@@ -77,19 +77,24 @@ def main():
 	for x, y, in getSerializedCoords(width, height):
 		cons = {
 			"0": {
-				"destination": getRouterID(x, y),
+				"to": getRouterID(x, y),
 				"port": "local"
 			}
 		}
-		noc[getSourceID(x, y)] = {"class": "source", "flits": 1, "connections": cons}
-	# add terminators (top & bottom)
+		noc[getSourceID(x, y)] = {
+			"class": "source",
+			"flits": 1,
+			"destination": 0,
+			"connections": cons
+		}
+	# add terminators
+	tx_term = {"class": "source", "destination": 0, "flits": 0}
 	for x in range(width):
-		noc[getTerminatorID("tx", "top", x)] = {"class": "source", "flits": 0}
-		noc[getTerminatorID("tx", "bottom", x)] = {"class": "source", "flits": 0}
-	# add terminators (left & right)
+		noc[getTerminatorID("tx", "top", x)] = tx_term
+		noc[getTerminatorID("tx", "bottom", x)] = tx_term
 	for y in range(height):
-		noc[getTerminatorID("tx", "left", y)] = {"class": "source", "flits": 0}
-		noc[getTerminatorID("tx", "right", y)] = {"class": "source", "flits": 0}
+		noc[getTerminatorID("tx", "left", y)] = tx_term
+		noc[getTerminatorID("tx", "right", y)] = tx_term
 	# add routing tables
 	for rx, ry in getSerializedCoords(width, height):
 		routerID = getRouterID(rx, ry)
