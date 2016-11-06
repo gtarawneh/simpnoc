@@ -29,7 +29,6 @@ def main():
 	# add routers
 	routers = [(x,y) for x in range(width) for y in range(height)]
 	for x, y in routers:
-		id = getRouterID(x,y)
 		isBorderLeft = x == 0
 		isBorderRight = x == width-1
 		isBorderTop = y == 0
@@ -50,7 +49,7 @@ def main():
 			"bottom": bottomTerm if isBorderBottom else bottomRouter,
 			"local": localTerm
 		}
-		noc[id] = {
+		noc[getRouterID(x,y)] = {
 			"class": "router",
 			"connections": cons,
 			"table": {

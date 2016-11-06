@@ -3,7 +3,7 @@
 import textwrap
 import json
 
-def insertSource(ind, id, flits):
+def insertSource(ind, sourceID, flits):
 	code = """
 		// source %IND (%ID)
 
@@ -23,12 +23,12 @@ def insertSource(ind, id, flits):
 	"""
 	reps = {
 		"%IND" : str(ind),
-		"%ID" : id,
+		"%ID" : sourceID,
 		"%FLITS" : str(flits),
 	}
 	return insertCode(code, reps)
 
-def insertSink(id):
+def insertSink(sinkID):
 	code ="""
 		// sink %ID
 
@@ -42,7 +42,7 @@ def insertSink(id):
 			.data(snk_data[%ID])
 		);
 	"""
-	return insertCode(code, {"%ID": str(id)})
+	return insertCode(code, {"%ID": str(sinkID)})
 
 def insertConnection(conInd, ind1, ind2, class1, class2, port1, port2):
 	if class1 == "router":
@@ -139,7 +139,7 @@ def insertConnectionRS(conInd, router, sink, port):
 	}
 	return insertCode(code, reps)
 
-def insertRouter(id):
+def insertRouter(routerID):
 	code = """
 		// router %ID
 
@@ -162,9 +162,9 @@ def insertRouter(id):
 			table_data[%ID]
 		);
 	"""
-	return insertCode(code, {"%ID": str(id)})
+	return insertCode(code, {"%ID": str(routerID)})
 
-def insertTable(id, table):
+def insertTable(tabID, table):
 	lines = [
 		"",
 		"// routing table (router %ID)",
@@ -179,7 +179,7 @@ def insertTable(id, table):
 		lines.append(code)
 	lines += ["endcase", ""]
 	code = '\n'.join(lines)
-	return insertCode(code, {"%ID": str(id)})
+	return insertCode(code, {"%ID": str(tabID)})
 
 def insertParams(routerCount, sourceCount, sinkCount):
 	code = """
