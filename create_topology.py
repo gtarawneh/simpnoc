@@ -58,10 +58,18 @@ def main():
 				"default": "local"
 			}
 		}
-	# add local sinks
-	sinks = [(x,y) for x in range(width) for y in range(height)]
-	for x, y in sinks:
-		noc[getSinkID(x, y)] = {"class": "sink"}
+	# add sinks
+	localSinks = [getSinkID(x, y) for x in range(width) for y in range(height)]
+	topSinks = [getTerminatorID("rx", "top", x) for x in range(width)]
+	bottomSinks = [getTerminatorID("rx", "bottom", x) for x in range(width)]
+	leftSinks = [getTerminatorID("rx", "left", x) for x in range(height)]
+	rightSinks = [getTerminatorID("rx", "right", x) for x in range(height)]
+	sinks = localSinks + topSinks + bottomSinks + leftSinks + rightSinks
+	for ind, sinkID in enumerate(sinks):
+		noc[sinkID] = {
+			"class": "sink",
+			"address": str(ind)
+		}
 	# add local sources
 	sources = [(x,y) for x in range(width) for y in range(height)]
 	for x, y, in sources:
@@ -75,15 +83,11 @@ def main():
 	# add terminators (top & bottom)
 	for x in range(width):
 		noc[getTerminatorID("tx", "top", x)] = {"class": "source", "flits": 0}
-		noc[getTerminatorID("rx", "top", x)] = {"class": "sink"}
 		noc[getTerminatorID("tx", "bottom", x)] = {"class": "source", "flits": 0}
-		noc[getTerminatorID("rx", "bottom", x)] = {"class": "sink"}
 	# add terminators (left & right)
 	for y in range(height):
 		noc[getTerminatorID("tx", "left", y)] = {"class": "source", "flits": 0}
-		noc[getTerminatorID("rx", "left", y)] = {"class": "sink"}
 		noc[getTerminatorID("tx", "right", y)] = {"class": "source", "flits": 0}
-		noc[getTerminatorID("rx", "right", y)] = {"class": "sink"}
 	with open("gen/noc.json", "w") as fid:
 		fid.write(json.dumps(noc, indent = 4, sort_keys = True))
 
