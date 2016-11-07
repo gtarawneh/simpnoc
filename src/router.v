@@ -1,12 +1,12 @@
-`ifndef _inc_router2_
-`define _inc_router2_
+`ifndef _inc_router_
+`define _inc_router_
 
-`include "rx_logic2.v"
+`include "rx_logic.v"
 `include "fifo.v"
-`include "tx_logic2.v"
+`include "tx_logic.v"
 `include "transceiver_dummy.v"
 
-module router2 (
+module router (
 		clk,
 		reset,
 		tx_req,
@@ -83,7 +83,7 @@ module router2 (
 
 	// rx logic
 
-	rx_logic_2 #(
+	rx_logic #(
 		.ID(ID),
 		.SIZE(SIZE),
 		.PORT_COUNT(PORT_COUNT)
@@ -117,7 +117,7 @@ module router2 (
 
 	// tx logic
 
-	tx_logic_2 #(
+	tx_logic #(
 		.ID(ID),
 		.SIZE(SIZE),
 		.PORT_COUNT(PORT_COUNT)

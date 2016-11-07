@@ -1,5 +1,5 @@
-`ifndef _inc_rx_logic2_
-`define _inc_rx_logic2_
+`ifndef _inc_rx_logic_
+`define _inc_rx_logic_
 
 // This modules receives incoming data items from several senders (using two-
 // phase handshakes) and picks one at a time to push into a fifo. It has two
@@ -10,7 +10,7 @@
 //
 // `fifo` : interface with fifo consisting of write, full and item_in signals
 
-module rx_logic_2 (
+module rx_logic (
 		clk,
 		reset,
 		fifo_push_req,

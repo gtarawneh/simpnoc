@@ -1,7 +1,7 @@
 `include "generator.v"
-`include "router2.v"
-`include "source2.v"
-`include "sink2.v"
+`include "router.v"
+`include "source.v"
+`include "sink.v"
 `include "connector.v"
 
 module noc (input clk, input reset);

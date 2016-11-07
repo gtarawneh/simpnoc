@@ -7,7 +7,7 @@ def insertSource(ind, sourceID, flits, destination):
 	code = """
 		// source %IND (%ID)
 
-		source2 #(
+		source #(
 			.ID(%IND),
 			.DESTINATION(%DEST),
 			.MAX_FLITS(%FLITS),
@@ -33,7 +33,7 @@ def insertSink(sinkID):
 	code ="""
 		// sink %ID
 
-		sink2 #(
+		sink #(
 			.ID(%ID)
 		) snk_%ID (
 			.clk(clk),
@@ -144,7 +144,7 @@ def insertRouter(routerID):
 	code = """
 		// router %ID
 
-		router2 #(
+		router #(
 			.ID(%ID),
 			.SIZE(SIZE),
 			.PORT_COUNT(PORT_COUNT),

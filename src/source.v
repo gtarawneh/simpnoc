@@ -1,7 +1,7 @@
-`ifndef _inc_source2_
-`define _inc_source2_
+`ifndef _inc_source_
+`define _inc_source_
 
-module source2 (clk, reset, req, ack, data);
+module source (clk, reset, req, ack, data);
 
 	parameter ID = 0;
 	parameter DESTINATION = 0;

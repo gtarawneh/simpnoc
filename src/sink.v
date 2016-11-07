@@ -1,7 +1,7 @@
-`ifndef _inc_sink2_
-`define _inc_sink2_
+`ifndef _inc_sink_
+`define _inc_sink_
 
-module sink2 (clk, reset, req, ack, data);
+module sink (clk, reset, req, ack, data);
 
 	parameter ID = 0;
 	parameter SIZE = 8;
