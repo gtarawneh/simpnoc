@@ -227,17 +227,16 @@ def getPortIndex(portName):
 		"3" : 3,
 		"4" : 4,
 		# direction convention 1
-		"top" : 0,
-		"right" : 1,
-		"bottom" : 2,
-		"left" : 3,
-		"inside" : 4,
+		"top" : 1,
+		"right" : 2,
+		"bottom" : 3,
+		"left" : 4,
 		# direction convention 2
-		"north": 0,
-		"east": 1,
-		"south" : 2,
-		"west" : 3,
-		"local" : 4,
+		"local" : 0,
+		"north": 1,
+		"east": 2,
+		"south" : 3,
+		"west" : 4,
 	}
 	return mappings[portName]
 

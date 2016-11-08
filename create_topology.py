@@ -37,11 +37,11 @@ def main():
 		isBorderRight = x == width-1
 		isBorderTop = y == height-1
 		isBorderBottom = y == 0
-		leftTerm = {"to": getTerminatorID("rx", "left", y), "port": "0"}
-		rightTerm = {"to": getTerminatorID("rx", "right", y), "port": "0"}
-		topTerm = {"to": getTerminatorID("rx", "top", x), "port": "0"}
-		bottomTerm = {"to": getTerminatorID("rx", "bottom", x), "port": "0"}
-		localTerm = {"to": getSinkID(x, y), "port": "0"}
+		leftTerm = {"to": getTerminatorID("rx", "left", y), "port": "local"}
+		rightTerm = {"to": getTerminatorID("rx", "right", y), "port": "local"}
+		topTerm = {"to": getTerminatorID("rx", "top", x), "port": "local"}
+		bottomTerm = {"to": getTerminatorID("rx", "bottom", x), "port": "local"}
+		localTerm = {"to": getSinkID(x, y), "port": "local"}
 		rightRouter = {"to": getRouterID(x+1, y), "port": "left"}
 		leftRouter = {"to": getRouterID(x-1, y), "port": "right"}
 		topRouter = {"to": getRouterID(x, y+1), "port": "bottom"}
