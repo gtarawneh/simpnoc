@@ -255,6 +255,7 @@ def main():
 	routers = getTypeList(topology, "router")
 	sources = getTypeList(topology, "source")
 	sinks = getTypeList(topology, "sink")
+	transmitters = routers + sources;
 	with open(routers_file, "w") as fid:
 		for r in routers:
 			ind = indMap[r]
@@ -274,20 +275,23 @@ def main():
 		print("Generated %s" % sources_file)
 	with open(connections_file, "w") as fid:
 		conInd = 0
-		for r in topology:
+		for r in transmitters:
 			lClass = topology[r]["class"]
 			ind = indMap[r]
 			cons = topology[r].get("connections", {})
-			for port in cons.keys():
-				destination = cons[port]["to"]
-				dPort = cons[port]["port"]
-				portInd = getPortIndex(port)
-				dPortInd = getPortIndex(dPort)
-				dClass = topology[destination]["class"]
-				dInd = indMap[destination]
-				str1 = insertConnection(conInd, ind, dInd, lClass, dClass, portInd, dPortInd)
-				fid.write(str1)
-				conInd += 1
+			if cons:
+				for port in cons.keys():
+					destination = cons[port]["to"]
+					dPort = cons[port]["port"]
+					portInd = getPortIndex(port)
+					dPortInd = getPortIndex(dPort)
+					dClass = topology[destination]["class"]
+					dInd = indMap[destination]
+					str1 = insertConnection(conInd, ind, dInd, lClass, dClass, portInd, dPortInd)
+					fid.write(str1)
+					conInd += 1
+			else:
+				print("Warning: transmitter <%s> has no outgoing connections" % r)
 		print("Generated %s" % connections_file)
 	with open(tables_file, "w") as fid:
 		for r in routers:
