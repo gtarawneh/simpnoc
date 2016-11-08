@@ -25,17 +25,18 @@ module router (
 	parameter SIZE = 8; // data bits
 	parameter PORT_COUNT = 5; // number of ports
 	parameter PORT_NAMES = {"North", "South", "East", "West", "Local"};
-	parameter DESTINATION_BITS = 3; // number of bits to specify port
+	parameter DESTINATION_BITS = 4; // number of bits to specify destination
+	parameter PORT_BITS = 4; // number of bits to specify port
 	parameter DEPTH_LOG2 = 4;
 
 	// module port declarations
 
 	input clk, reset;
-	input [DESTINATION_BITS-1:0] table_data;
+	input [PORT_BITS-1:0] table_data;
 	input [PORT_COUNT-1:0] tx_ack;
 	input [PORT_COUNT-1:0] rx_req;
 	input [PORT_COUNT*SIZE-1:0] rx_data;
-	output [SIZE-1:0] table_addr;
+	output [DESTINATION_BITS-1:0] table_addr;
 	output [PORT_COUNT-1:0] tx_req;
 	output [PORT_COUNT*SIZE-1:0] tx_data;
 	output [PORT_COUNT-1:0] rx_ack;
@@ -120,7 +121,9 @@ module router (
 	tx_logic #(
 		.ID(ID),
 		.SIZE(SIZE),
-		.PORT_COUNT(PORT_COUNT)
+		.PORT_COUNT(PORT_COUNT),
+		.DESTINATION_BITS(DESTINATION_BITS),
+		.PORT_BITS(PORT_BITS)
 	) tl (
 		.clk(clk),
 		.reset(reset),

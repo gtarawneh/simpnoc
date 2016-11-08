@@ -3,13 +3,13 @@
 import json
 
 def getRouterID(x, y):
-	return "router_%d%d" % (x, y)
+	return "router_%d_%d" % (x, y)
 
 def getSinkID(x, y):
-	return "sink_local_%d%d" % (x, y)
+	return "sink_%d_%d" % (x, y)
 
 def getSourceID(x, y):
-	return "source_local_%d%d" % (x, y)
+	return "source_%d_%d" % (x, y)
 
 def getTerminatorID(ttype, location, i):
 	# ttype = tx/rx
@@ -80,7 +80,7 @@ def main():
 		}
 		noc[getSourceID(x, y)] = {
 			"class": "source",
-			"flits": 1,
+			"flits": 0,
 			"destination": 0,
 			"connections": cons
 		}

@@ -18,6 +18,7 @@ styles = {
 	'!!': ('red', ['bold']),
 	'Generated': ('green', []),
 	'Warning': ('yellow', []),
+	'destination': ('blue', []),
 };
 
 def main():

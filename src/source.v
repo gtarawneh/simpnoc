@@ -8,10 +8,16 @@ module source (clk, reset, req, ack, data);
 	parameter MAX_FLITS = 2;
 	parameter SIZE = 8;
 	parameter PAYLOAD = 4;
+	parameter DESTINATION_BITS = 4;
+
+	localparam PAYLOAD_BITS = SIZE - DESTINATION_BITS;
 
 	input clk, reset, ack;
 	output reg req;
 	output reg [SIZE-1:0] data;
+
+	wire [DESTINATION_BITS-1:0] destination = DESTINATION;
+	wire [PAYLOAD_BITS-1:0] payload = PAYLOAD;
 
 	reg [7:0] flits;
 	reg ack_old;
@@ -34,7 +40,7 @@ module source (clk, reset, req, ack, data);
 
 			if (!busy && flits<MAX_FLITS) begin
 
-				data <= PAYLOAD;
+				data <= {payload, destination};
 				req <= ~req;
 				flits <= (flits<128) ? flits + 1 : flits;
 				busy <= 1;

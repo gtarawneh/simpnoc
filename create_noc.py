@@ -10,9 +10,10 @@ def insertSource(ind, sourceID, flits, destination):
 		source #(
 			.ID(%IND),
 			.DESTINATION(%DEST),
+			.DESTINATION_BITS(4),
 			.MAX_FLITS(%FLITS),
 			.SIZE(SIZE),
-			.PAYLOAD(%DEST)
+			.PAYLOAD(10)
 		) source_%ID (
 			.clk(clk),
 			.reset(reset),
@@ -149,6 +150,7 @@ def insertRouter(routerID):
 			.SIZE(SIZE),
 			.PORT_COUNT(PORT_COUNT),
 			.DESTINATION_BITS(DESTINATION_BITS),
+			.PORT_BITS(PORT_BITS),
 			.DEPTH_LOG2(DEPTH_LOG2)
 		) router_%ID (
 			clk,
@@ -186,7 +188,8 @@ def insertParams(routerCount, sourceCount, sinkCount):
 	code = """
 		localparam SIZE = 8; // data bits
 		localparam PORT_COUNT = 5; // number of ports
-		localparam DESTINATION_BITS = 3; // number of bits to specify port
+		localparam DESTINATION_BITS = 4; // number of bits to specify destination
+		localparam PORT_BITS = 4; // number of bits to specify port
 		localparam DEPTH_LOG2 = 4;
 		localparam ROUTER_COUNT = %ROUTERS;
 		localparam SINK_COUNT = %SINKS;

@@ -20,7 +20,8 @@ module tx_logic (
 	parameter ID = -1; // module id
 	parameter SIZE = 8; // data bits
 	parameter PORT_COUNT = 5; // number of ports
-	parameter DESTINATION_BITS = 3; // number of bits to specify port
+	parameter DESTINATION_BITS = 4; // number of bits to specify destination
+	parameter PORT_BITS = 4; // number of bits to specify port
 
 	input clk, reset;
 
@@ -38,18 +39,19 @@ module tx_logic (
 
 	// routing table
 
-	output wire [SIZE-1:0] table_addr;
-	input [DESTINATION_BITS-1:0] table_data;
+	output wire [DESTINATION_BITS-1:0] table_addr;
+	input [PORT_BITS-1:0] table_data;
 
 	// internal nets
 
 	reg [SIZE-1:0] fifo_pop_data_arr [PORT_COUNT-1:0];
 	reg [PORT_COUNT-1:0] tbusy; // tx transceiver busy
 	reg [PORT_COUNT-1:0] fifo_pop_ack_old;
-	wire [DESTINATION_BITS-1:0] destination = table_data;
+	wire [PORT_BITS-1:0] port = table_data;
 	wire [PORT_COUNT-1:0] ack_received = fifo_pop_ack ^ fifo_pop_ack_old;
 
-	assign table_addr = fifo_item_out;
+	// destination address is in the lower part of the flit
+	assign table_addr = fifo_item_out[DESTINATION_BITS-1:0];
 
 	// pack fifo_pop_data_arr into fifo_pop_data
 
@@ -84,12 +86,12 @@ module tx_logic (
 			for (i=0; i<PORT_COUNT; i=i+1) if (ack_received[i])
 				$display("#%3d, %10s [%1d] : received ack from port <%g>", $time, "TX_LOGIC", ID, i);
 
-			if (~fifo_empty && ~tbusy[destination]) begin
+			if (~fifo_empty && ~tbusy[port]) begin
 
-				$display("#%3d, %10s [%1d] : found item <%g> in fifo, sending through port <%g>", $time, "TX_LOGIC", ID, fifo_item_out, destination);
-				fifo_pop_data_arr[destination] <= fifo_item_out; // set data bits
-				fifo_pop_req[destination] <= ~fifo_pop_req[destination]; // initiate request
-				tbusy[destination] <= 1; // mark this transceiver as busy
+				$display("#%3d, %10s [%1d] : found item <%g> in fifo, destination is <%g>, sending through port <%g>", $time, "TX_LOGIC", ID, fifo_item_out, table_addr, port);
+				fifo_pop_data_arr[port] <= fifo_item_out; // set data bits
+				fifo_pop_req[port] <= ~fifo_pop_req[port]; // initiate request
+				tbusy[port] <= 1; // mark this transceiver as busy
 				fifo_read <= 1;
 
 			end else begin
