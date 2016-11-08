@@ -56,10 +56,7 @@ def main():
 		noc[getRouterID(x,y)] = {
 			"class": "router",
 			"connections": cons,
-			"table": {
-				"0" : "right",
-				"default": "local"
-			}
+			"table": getRoutingTableXY(x, y, width, height)
 		}
 	# add sinks
 	localSinks = [getSinkID(x, y) for x, y in getSerializedCoords(width, height)]
@@ -137,27 +134,28 @@ def main():
 			}
 
 		}
-	# add routing tables
-	for rx, ry in getSerializedCoords(width, height):
-		routerID = getRouterID(rx, ry)
-		table = {}
-		for sx, sy in getSerializedCoords(width, height):
-			sinkID = getSinkID(sx, sy)
-			sinkAddr = noc[sinkID]["address"]
-			if (rx, ry) == (sx, sy):
-				port = "local"
-			elif sx > rx:
-				port = "right"
-			elif sx < rx:
-				port = "left"
-			elif sy < ry:
-				port = "bottom"
-			else:
-				port = "top"
-			table[sinkAddr] = port
-		table["default"] = "local"
-		noc[routerID]["table"] = table
 	with open("gen/noc.json", "w") as fid:
 		fid.write(json.dumps(noc, indent = 4, sort_keys = True))
+
+def getIndex(x, y, width, height):
+	return y * width + x
+
+def getRoutingTableXY(rx, ry, width, height):
+	table = {}
+	for sx, sy in getSerializedCoords(width, height):
+		sinkAddr = getIndex(sx, sy, width, height)
+		if (rx, ry) == (sx, sy):
+			port = "local"
+		elif sx > rx:
+			port = "right"
+		elif sx < rx:
+			port = "left"
+		elif sy < ry:
+			port = "bottom"
+		else:
+			port = "top"
+		table[sinkAddr] = port
+	table["default"] = "local"
+	return table
 
 main()
