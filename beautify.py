@@ -16,6 +16,8 @@ styles = {
 	'pushed|popped': ('red', ['bold']),
 	'found': (None, ['bold']),
 	'!!': ('red', ['bold']),
+	'Generated': ('green', []),
+	'Warning': ('yellow', []),
 };
 
 def main():
