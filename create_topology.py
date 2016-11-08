@@ -88,13 +88,55 @@ def main():
 			"connections": cons
 		}
 	# add terminators
-	tx_term = {"class": "source", "destination": 0, "flits": 0}
 	for x in range(width):
-		noc[getTerminatorID("tx", "top", x)] = tx_term
-		noc[getTerminatorID("tx", "bottom", x)] = tx_term
+		noc[getTerminatorID("tx", "top", x)] = {
+			"class": "source",
+			"destination": 0,
+			"flits": 0,
+			"connections": {
+				"0": {
+					"to": getRouterID(x, height-1),
+					"port": "top"
+				}
+			}
+		}
+		noc[getTerminatorID("tx", "bottom", x)] = {
+			"class": "source",
+			"destination": 0,
+			"flits": 0,
+			"connections": {
+				"0": {
+					"to": getRouterID(x, 0),
+					"port": "bottom"
+				}
+			}
+
+		}
 	for y in range(height):
-		noc[getTerminatorID("tx", "left", y)] = tx_term
-		noc[getTerminatorID("tx", "right", y)] = tx_term
+		noc[getTerminatorID("tx", "left", y)] = {
+			"class": "source",
+			"destination": 0,
+			"flits": 0,
+			"connections": {
+				"0": {
+					"to": getRouterID(0, y),
+					"port": "left"
+				}
+			}
+
+		}
+		noc[getTerminatorID("tx", "right", y)] = {
+			"class": "source",
+			"destination": 0,
+			"flits": 0,
+			"connections": {
+				"0": {
+					"to": getRouterID(width-1, y),
+					"port": "right"
+				}
+			}
+
+		}
 	# add routing tables
 	for rx, ry in getSerializedCoords(width, height):
 		routerID = getRouterID(rx, ry)
