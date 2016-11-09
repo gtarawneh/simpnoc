@@ -1,6 +1,8 @@
 `ifndef _inc_rx_logic_
 `define _inc_rx_logic_
 
+`include "debug_tasks.v"
+
 // This modules receives incoming data items from several senders (using two-
 // phase handshakes) and picks one at a time to push into a fifo. It has two
 // interfaces:
@@ -57,6 +59,8 @@ module rx_logic (
 
 	// body
 
+	DebugTasks DT();
+
 	always @(posedge clk or posedge reset) begin
 
 		if (reset) begin
@@ -91,14 +95,13 @@ module rx_logic (
 					fifo_push_ack[port] = ~fifo_push_ack[port];
 					fifo_item_in = fifo_push_data_arr[port];
 					fifo_push_req_old[port] <= fifo_push_req[port];
+					DT.printPrefix("RX_LOGIC", ID);
 					$display(
 						{
-							"#%3d, %10s [%1d] : ",
 							"received <%g:%g> from port <%g>, ",
 							"acknowledging, ",
 							"pushing to fifo"
 						},
-						$time, "RX_LOGIC", ID,
 						fifo_item_in[SIZE - 1:DESTINATION_BITS],
 						fifo_item_in[DESTINATION_BITS-1:0],
 						port

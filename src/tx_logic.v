@@ -1,6 +1,8 @@
 `ifndef _inc_tx_logic_
 `define _inc_tx_logic_
 
+`include "debug_tasks.v"
+
 // this modules picks items from a fifo, one at a time, and sends them to one
 // of several tx transceivers that use 2-phase handshakes
 
@@ -66,6 +68,8 @@ module tx_logic (
 
 	// body
 
+	DebugTasks DT();
+
 	always @(posedge clk or posedge reset) begin
 
 		if (reset) begin
@@ -83,13 +87,16 @@ module tx_logic (
 
 			tbusy <= tbusy & ~ack_received;
 
-			for (i=0; i<PORT_COUNT; i=i+1) if (ack_received[i])
-				$display("#%3d, %10s [%1d] : received ack from port <%g>", $time, "TX_LOGIC", ID, i);
+			for (i=0; i<PORT_COUNT; i=i+1) if (ack_received[i]) begin
+				DT.printPrefix("TX_LOGIC", ID);
+				$display("received ack from port <%g>", i);
+			end
 
 			if (~fifo_empty && ~tbusy[port]) begin
 
-				$display("#%3d, %10s [%1d] : found item <%g:%g> in fifo, sending through port <%g>",
-					$time, "TX_LOGIC", ID, fifo_item_out[SIZE-1:DESTINATION_BITS], fifo_item_out[DESTINATION_BITS-1:0], table_addr, port);
+				DT.printPrefix("TX_LOGIC", ID);
+				$display("found item <%g:%g> in fifo, sending through port <%g>",
+					fifo_item_out[SIZE-1:DESTINATION_BITS], fifo_item_out[DESTINATION_BITS-1:0], table_addr, port);
 				fifo_pop_data_arr[port] <= fifo_item_out; // set data bits
 				fifo_pop_req[port] <= ~fifo_pop_req[port]; // initiate request
 				tbusy[port] <= 1; // mark this transceiver as busy

@@ -1,6 +1,8 @@
 `ifndef _inc_fifo_
 `define _inc_fifo_
 
+`include "debug_tasks.v"
+
 module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 
 	parameter ID = -1;
@@ -30,6 +32,8 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 	wire do_read = read & !empty;
 	wire do_write = write & !full;
 
+	DebugTasks DT();
+
 	always @(posedge clk or posedge reset) begin
 
 		if (reset) begin
@@ -44,11 +48,10 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 
 			if (do_read & do_write) begin
 
+				DT.printPrefix("FIFO", ID);
+
 				$display(
-					"#%3d, %10s [%1d] : pushed <%g:%d> and popped <%g:%g> (read_ptr = %g, write_ptr = %g)",
-					$time,
-					"FIFO",
-					ID,
+					"pushed <%g:%g> and popped <%g:%g> (read_ptr = %g, write_ptr = %g)",
 					item_in[SIZE-1:DESTINATION_BITS],
 					item_in[DESTINATION_BITS-1:0],
 					item_out[SIZE-1:DESTINATION_BITS],
@@ -67,11 +70,10 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 				read_ptr <= read_ptr_p1;
 				empty <= (read_ptr_p1 == write_ptr);
 
+				DT.printPrefix("FIFO", ID);
+
 				$display(
-					"#%3d, %10s [%1d] : popped <%g:%g> (read_ptr = %g, write_ptr = %g, empty = %g)",
-					$time,
-					"FIFO",
-					ID,
+					"popped <%g:%g> (read_ptr = %g, write_ptr = %g, empty = %g)",
 					item_out[SIZE-1:DESTINATION_BITS],
 					item_out[DESTINATION_BITS-1:0],
 					read_ptr_p1,
@@ -86,11 +88,10 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 				write_ptr <= write_ptr_p1;
 				full <= (read_ptr == write_ptr_p1);
 
+				DT.printPrefix("FIFO", ID);
+
 				$display(
-					"#%3d, %10s [%1d] : pushed <%g:%g> (read_ptr = %g, write_ptr = %g, full = %g)",
-					$time,
-					"FIFO",
-					ID,
+					"pushed <%g:%g> (read_ptr = %g, write_ptr = %g, full = %g)",
 					item_in[SIZE-1:DESTINATION_BITS],
 					item_in[DESTINATION_BITS-1:0],
 					read_ptr,

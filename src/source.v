@@ -1,6 +1,8 @@
 `ifndef _inc_source_
 `define _inc_source_
 
+`include "debug_tasks.v"
+
 module source (clk, reset, req, ack, data);
 
 	parameter ID = 0;
@@ -27,6 +29,8 @@ module source (clk, reset, req, ack, data);
 	reg busy;
 	wire ack_received = ack ^ ack_old;
 
+	DebugTasks DT();
+
 	always @(posedge clk or posedge reset) begin
 
 		if (reset) begin
@@ -49,11 +53,13 @@ module source (clk, reset, req, ack, data);
 				req <= ~req;
 				flits <= (flits<128) ? flits + 1 : flits;
 				busy <= 1;
-				$display ("#%3d, %10s [%1d] : sending <%g:%g>", $time, "Source", ID, payload, DESTINATION);
+				DT.printPrefix("Source", ID);
+				$display("sending <%g:%g>", payload, DESTINATION);
 
 			end else if (busy & ack_received) begin
 
-				$display ("#%3d, %10s [%1d] : received ack", $time, "Source", ID);
+				DT.printPrefix("Source", ID);
+				$display("received ack");
 				busy <= 0;
 
 			end

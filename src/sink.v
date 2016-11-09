@@ -1,6 +1,8 @@
 `ifndef _inc_sink_
 `define _inc_sink_
 
+`include "debug_tasks.v"
+
 module sink (clk, reset, req, ack, data);
 
 	parameter ID = 0;
@@ -16,6 +18,8 @@ module sink (clk, reset, req, ack, data);
 
 	reg req_old;
 
+	DebugTasks DT();
+
 	always @(posedge clk or posedge reset) begin
 
 		if (reset) begin
@@ -30,7 +34,11 @@ module sink (clk, reset, req, ack, data);
 
 			if (req ^ req_old) begin
 
-				$display("#%3d, %10s [%1d] : received <%g:%g>, acknowledging", $time, "Sink", ID, data[SIZE-1:DESTINATION_BITS], data[DESTINATION_BITS-1:0]);
+				DT.printPrefix("Sink", ID);
+
+				// $display("hello");
+
+				$display("received <%g:%g>, acknowledging", data[SIZE-1:DESTINATION_BITS], data[DESTINATION_BITS-1:0]);
 
 				ack <= ~ack;
 
