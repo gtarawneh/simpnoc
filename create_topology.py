@@ -2,14 +2,17 @@
 
 import json
 
-def getRouterID(x, y):
-	return "router_%d_%d" % (x, y)
+def getRouterID(x, y, width, height):
+	ind = getIndex(x, y, width, height)
+	return "router_%02d" % ind
 
-def getSinkID(x, y):
-	return "sink_%d_%d" % (x, y)
+def getSinkID(x, y, width, height):
+	ind = getIndex(x, y, width, height)
+	return "sink_%02d" % ind
 
-def getSourceID(x, y):
-	return "source_%d_%d" % (x, y)
+def getSourceID(x, y, width, height):
+	ind = getIndex(x, y, width, height)
+	return "source_%02d" % ind
 
 def getTerminatorID(ttype, location, i):
 	# ttype = tx/rx
@@ -41,11 +44,11 @@ def main():
 		rightTerm = {"to": getTerminatorID("rx", "right", y), "port": "local"}
 		topTerm = {"to": getTerminatorID("rx", "top", x), "port": "local"}
 		bottomTerm = {"to": getTerminatorID("rx", "bottom", x), "port": "local"}
-		localTerm = {"to": getSinkID(x, y), "port": "local"}
-		rightRouter = {"to": getRouterID(x+1, y), "port": "left"}
-		leftRouter = {"to": getRouterID(x-1, y), "port": "right"}
-		topRouter = {"to": getRouterID(x, y+1), "port": "bottom"}
-		bottomRouter = {"to": getRouterID(x, y-1), "port": "top"}
+		localTerm = {"to": getSinkID(x, y, width, height), "port": "local"}
+		rightRouter = {"to": getRouterID(x+1, y, width, height), "port": "left"}
+		leftRouter = {"to": getRouterID(x-1, y, width, height), "port": "right"}
+		topRouter = {"to": getRouterID(x, y+1, width, height), "port": "bottom"}
+		bottomRouter = {"to": getRouterID(x, y-1, width, height), "port": "top"}
 		cons = {
 			"right": rightTerm if isBorderRight else rightRouter,
 			"left": leftTerm if isBorderLeft else leftRouter,
@@ -53,13 +56,13 @@ def main():
 			"bottom": bottomTerm if isBorderBottom else bottomRouter,
 			"local": localTerm
 		}
-		noc[getRouterID(x,y)] = {
+		noc[getRouterID(x, y, width, height)] = {
 			"class": "router",
 			"connections": cons,
 			"table": getRoutingTableXY(x, y, width, height)
 		}
 	# add sinks
-	localSinks = [getSinkID(x, y) for x, y in getSerializedCoords(width, height)]
+	localSinks = [getSinkID(x, y, width, height) for x, y in getSerializedCoords(width, height)]
 	topSinks = [getTerminatorID("rx", "top", x) for x in range(width)]
 	bottomSinks = [getTerminatorID("rx", "bottom", x) for x in range(width)]
 	leftSinks = [getTerminatorID("rx", "left", x) for x in range(height)]
@@ -74,11 +77,11 @@ def main():
 	for x, y, in getSerializedCoords(width, height):
 		cons = {
 			"0": {
-				"to": getRouterID(x, y),
+				"to": getRouterID(x, y, width, height),
 				"port": "local"
 			}
 		}
-		noc[getSourceID(x, y)] = {
+		noc[getSourceID(x, y, width, height)] = {
 			"class": "source",
 			"flits": 0,
 			"destination": 0,
@@ -93,7 +96,7 @@ def main():
 			"flits": 0,
 			"connections": {
 				"0": {
-					"to": getRouterID(x, height-1),
+					"to": getRouterID(x, height-1, width, height),
 					"port": "top"
 				}
 			}
@@ -104,7 +107,7 @@ def main():
 			"flits": 0,
 			"connections": {
 				"0": {
-					"to": getRouterID(x, 0),
+					"to": getRouterID(x, 0, width, height),
 					"port": "bottom"
 				}
 			}
@@ -117,7 +120,7 @@ def main():
 			"flits": 0,
 			"connections": {
 				"0": {
-					"to": getRouterID(0, y),
+					"to": getRouterID(0, y, width, height),
 					"port": "left"
 				}
 			}
@@ -129,7 +132,7 @@ def main():
 			"flits": 0,
 			"connections": {
 				"0": {
-					"to": getRouterID(width-1, y),
+					"to": getRouterID(width-1, y, width, height),
 					"port": "right"
 				}
 			}
