@@ -88,7 +88,8 @@ module tx_logic (
 
 			if (~fifo_empty && ~tbusy[port]) begin
 
-				$display("#%3d, %10s [%1d] : found item <%g> in fifo, destination is <%g>, sending through port <%g>", $time, "TX_LOGIC", ID, fifo_item_out, table_addr, port);
+				$display("#%3d, %10s [%1d] : found item <%g:%g> in fifo, sending through port <%g>",
+					$time, "TX_LOGIC", ID, fifo_item_out[SIZE-1:DESTINATION_BITS], fifo_item_out[DESTINATION_BITS-1:0], table_addr, port);
 				fifo_pop_data_arr[port] <= fifo_item_out; // set data bits
 				fifo_pop_req[port] <= ~fifo_pop_req[port]; // initiate request
 				tbusy[port] <= 1; // mark this transceiver as busy

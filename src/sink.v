@@ -5,6 +5,8 @@ module sink (clk, reset, req, ack, data);
 
 	parameter ID = 0;
 	parameter SIZE = 8;
+	parameter DESTINATION_BITS = 4; // number of bits to specify destination
+	parameter PORT_BITS = 4; // number of bits to specify port
 
 	input clk, reset, req;
 
@@ -28,7 +30,7 @@ module sink (clk, reset, req, ack, data);
 
 			if (req ^ req_old) begin
 
-				$display("#%3d, %10s [%1d] : received <%g>, acknowledging", $time, "Sink", ID, data);
+				$display("#%3d, %10s [%1d] : received <%g:%g>, acknowledging", $time, "Sink", ID, data[SIZE-1:DESTINATION_BITS], data[DESTINATION_BITS-1:0]);
 
 				ack <= ~ack;
 

@@ -6,6 +6,8 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 	parameter ID = -1;
 	parameter SIZE = 8;
 	parameter DEPTH_LOG2 = 4;
+	parameter DESTINATION_BITS = 4; // number of bits to specify destination
+	parameter PORT_BITS = 4; // number of bits to specify port
 
 	localparam DEPTH = 2 ** DEPTH_LOG2;
 
@@ -43,12 +45,14 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 			if (do_read & do_write) begin
 
 				$display(
-					"#%3d, %10s [%1d] : pushed <%g> and popped <%g> (read_ptr = %g, write_ptr = %g)",
+					"#%3d, %10s [%1d] : pushed <%g:%d> and popped <%g:%g> (read_ptr = %g, write_ptr = %g)",
 					$time,
 					"FIFO",
 					ID,
-					item_in,
-					item_out,
+					item_in[SIZE-1:DESTINATION_BITS],
+					item_in[DESTINATION_BITS-1:0],
+					item_out[SIZE-1:DESTINATION_BITS],
+					item_out[DESTINATION_BITS-1:0],
 					read_ptr_p1,
 					write_ptr_p1,
 				);
@@ -64,11 +68,12 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 				empty <= (read_ptr_p1 == write_ptr);
 
 				$display(
-					"#%3d, %10s [%1d] : popped <%g> (read_ptr = %g, write_ptr = %g, empty = %g)",
+					"#%3d, %10s [%1d] : popped <%g:%g> (read_ptr = %g, write_ptr = %g, empty = %g)",
 					$time,
 					"FIFO",
 					ID,
-					item_out,
+					item_out[SIZE-1:DESTINATION_BITS],
+					item_out[DESTINATION_BITS-1:0],
 					read_ptr_p1,
 					write_ptr,
 					read_ptr_p1 == write_ptr
@@ -82,11 +87,12 @@ module fifo(clk, reset, full, empty, item_in, item_out, write, read);
 				full <= (read_ptr == write_ptr_p1);
 
 				$display(
-					"#%3d, %10s [%1d] : pushed <%g> (read_ptr = %g, write_ptr = %g, full = %g)",
+					"#%3d, %10s [%1d] : pushed <%g:%g> (read_ptr = %g, write_ptr = %g, full = %g)",
 					$time,
 					"FIFO",
 					ID,
-					item_in,
+					item_in[SIZE-1:DESTINATION_BITS],
+					item_in[DESTINATION_BITS-1:0],
 					read_ptr,
 					write_ptr_p1,
 					read_ptr == write_ptr_p1

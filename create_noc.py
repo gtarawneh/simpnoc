@@ -3,17 +3,17 @@
 import textwrap
 import json
 
-def insertSource(ind, sourceID, flits, destination):
+def insertSource(ind, sourceID, flits, destination, payload):
 	code = """
 		// source %IND (%ID)
 
 		source #(
 			.ID(%IND),
 			.DESTINATION(%DEST),
-			.DESTINATION_BITS(4),
+			.DESTINATION_BITS(DESTINATION_BITS),
 			.MAX_FLITS(%FLITS),
 			.SIZE(SIZE),
-			.PAYLOAD(10)
+			.PAYLOAD(%PAYLOAD)
 		) source_%ID (
 			.clk(clk),
 			.reset(reset),
@@ -27,6 +27,7 @@ def insertSource(ind, sourceID, flits, destination):
 		"%ID" : sourceID,
 		"%FLITS" : str(flits),
 		"%DEST": str(destination),
+		"%PAYLOAD": str(payload),
 	}
 	return insertCode(code, reps)
 
@@ -271,9 +272,10 @@ def main():
 	with open(sources_file, "w") as fid:
 		for s in sources:
 			ind = indMap[s]
-			flits = topology[s]["flits"]
+			flits = topology[s].get("flits", 0)
 			dest = topology[s]["destination"]
-			fid.write(insertSource(ind, s, flits, dest))
+			payload = topology[s].get("payload", "-1")
+			fid.write(insertSource(ind, s, flits, dest, payload))
 		print("Generated %s" % sources_file)
 	with open(connections_file, "w") as fid:
 		conInd = 0

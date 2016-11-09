@@ -26,6 +26,8 @@ module rx_logic (
 	parameter ID = -1;
 	parameter SIZE = 8;
 	parameter PORT_COUNT = 5;
+	parameter DESTINATION_BITS = 4; // number of bits to specify destination
+	parameter PORT_BITS = 4; // number of bits to specify port
 
 	// module port declarations
 
@@ -92,12 +94,14 @@ module rx_logic (
 					$display(
 						{
 							"#%3d, %10s [%1d] : ",
-							"received <%g> from port <%g>, ",
+							"received <%g:%g> from port <%g>, ",
 							"acknowledging, ",
 							"pushing to fifo"
 						},
 						$time, "RX_LOGIC", ID,
-						fifo_item_in, port
+						fifo_item_in[SIZE - 1:DESTINATION_BITS],
+						fifo_item_in[DESTINATION_BITS-1:0],
+						port
 					);
 				end
 

@@ -16,8 +16,11 @@ module source (clk, reset, req, ack, data);
 	output reg req;
 	output reg [SIZE-1:0] data;
 
+	integer seed = ID;
+
 	wire [DESTINATION_BITS-1:0] destination = DESTINATION;
-	wire [PAYLOAD_BITS-1:0] payload = PAYLOAD;
+
+	reg [PAYLOAD_BITS-1:0] payload;
 
 	reg [7:0] flits;
 	reg ack_old;
@@ -33,6 +36,7 @@ module source (clk, reset, req, ack, data);
 			flits <= 0;
 			ack_old <= 0;
 			busy <= 0;
+			payload = (PAYLOAD == -1) ? $urandom(seed) : PAYLOAD;
 
 		end else begin
 
@@ -40,11 +44,12 @@ module source (clk, reset, req, ack, data);
 
 			if (!busy && flits<MAX_FLITS) begin
 
+				payload = (PAYLOAD == -1) ? $urandom(seed) : PAYLOAD;
 				data <= {payload, destination};
 				req <= ~req;
 				flits <= (flits<128) ? flits + 1 : flits;
 				busy <= 1;
-				$display ("#%3d, %10s [%1d] : sending <%g> to destination <%g>", $time, "Source", ID, PAYLOAD, DESTINATION);
+				$display ("#%3d, %10s [%1d] : sending <%g:%g>", $time, "Source", ID, payload, DESTINATION);
 
 			end else if (busy & ack_received) begin
 

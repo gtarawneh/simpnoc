@@ -87,7 +87,9 @@ module router (
 	rx_logic #(
 		.ID(ID),
 		.SIZE(SIZE),
-		.PORT_COUNT(PORT_COUNT)
+		.PORT_COUNT(PORT_COUNT),
+		.DESTINATION_BITS(DESTINATION_BITS),
+		.PORT_BITS(PORT_BITS)
 	) rl (
 		.clk(clk),
 		.reset(reset),
@@ -104,7 +106,9 @@ module router (
 	fifo #(
 		.ID(ID),
 		.SIZE(SIZE),
-		.DEPTH_LOG2(DEPTH_LOG2)
+		.DEPTH_LOG2(DEPTH_LOG2),
+		.DESTINATION_BITS(DESTINATION_BITS),
+		.PORT_BITS(PORT_BITS)
 	) myfifo1 (
 		.clk(clk),
 		.reset(reset),

@@ -82,6 +82,7 @@ def main():
 			"class": "source",
 			"flits": 0,
 			"destination": 0,
+			"payload": -1,
 			"connections": cons
 		}
 	# add terminators
