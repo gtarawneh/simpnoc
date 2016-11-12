@@ -1,5 +1,3 @@
-all: topology noc
-
 noc:
 	@./create_noc.py 2>&1 | ./beautify.py
 
