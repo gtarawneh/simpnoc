@@ -83,6 +83,7 @@ module rx (
 			flit_counter <= 0;
 			sw_req <= 0;
 			ch_ack <= 0;
+			$display("rx initialized");
 
 		end else begin
 
@@ -91,8 +92,15 @@ module rx (
 				state <= ST_LATCHED;
 				REG_FLIT <= ch_flit;
 				sw_chnl <= 0;
+				$display("req arrived, latched flit");
 
 			end else if (state == ST_LATCHED) begin
+
+				if (head_flit) begin
+					$display("flit decoded: head");
+				end else begin
+					$display("flit decoded: body");
+				end
 
 				state <= head_flit ? ST_RC : ST_BUF;
 
@@ -101,19 +109,25 @@ module rx (
 				REG_OUT_CHANNEL <= 0; //LUT[destination];
 				state <= ST_BUF;
 
+				$display("fetched routing information");
+
 			end else if (state == ST_BUF) begin
 
-				if (flit_counter == 7) begin
+				if (flit_counter == 8) begin
 
 					sw_chnl <= destination;
 					sw_req <= 1;
 					state <= ST_CH_WAIT;
+
+					$display("packet assembly complete, requesting outgoing channel");
 
 				end else begin
 
 					state <= ST_IDLE;
 					ch_ack <= ~ch_ack;
 					flit_counter <= flit_counter + 1;
+
+					$display("added flit %g to buffer", flit_counter);
 
 				end
 
@@ -122,6 +136,7 @@ module rx (
 				if (sw_gnt) begin
 
 					state <= ST_SEND;
+					$display("granted outgoing channel, sending ..");
 
 				end
 
@@ -129,6 +144,7 @@ module rx (
 
 				if (~sw_gnt) begin
 
+					$display("sending complete");
 					state <= ST_IDLE;
 					ch_ack <= ~ch_ack;
 					flit_counter <= 0;

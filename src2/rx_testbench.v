@@ -5,7 +5,7 @@
 
 module testbench_rx();
 
-	localparam DURATION = 50; // duration of simulation (time units)
+	localparam DURATION = 250; // duration of simulation (time units)
 
 	initial begin
 		#DURATION $finish;
@@ -14,13 +14,32 @@ module testbench_rx();
 	wire clk, reset;
 
 	generator u1 (clk, reset);
+		integer i;
+
+	initial begin
+		ch_req <= 0;
+		ch_flit <= 0;
+		sw_gnt <= 0;
+		#10
+		ch_flit <= 8'b10000000;
+		ch_req <= ~ch_req;
+		for (i=0; i<8; i=i+1) begin
+			#10
+			ch_flit <= 8'b00000000;
+			ch_req <= ~ch_req;
+		end
+		#10
+		sw_gnt <= 1;
+		#10
+		sw_gnt <= 0;
+	end
 
 	// channel interface:
-	reg ch_req = 0;
-	reg [7:0] ch_flit = 0;
+	reg ch_req;
+	reg [7:0] ch_flit;
 
 	// switch interface
-	reg sw_gnt = 0;
+	reg sw_gnt;
 	wire [2:0] sw_chnl;
 
 	// buffer interface

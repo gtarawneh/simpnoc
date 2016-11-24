@@ -19,6 +19,7 @@ styles = {
 	'Generated': ('green', []),
 	'Warning': ('yellow', []),
 	'destination': ('blue', []),
+	'req arrived': ('blue', ['bold']),
 };
 
 def main():
