@@ -1,6 +1,8 @@
 `ifndef _inc_rx_
 `define _inc_rx_
 
+`include "debug_tasks.v"
+
 module rx (
 		clk,
 		reset,
@@ -13,6 +15,8 @@ module rx (
 		buf_addr,
 		buf_data
 	);
+
+	DebugTasks DT();
 
 	// parameters:
 
@@ -83,6 +87,7 @@ module rx (
 			flit_counter <= 0;
 			sw_req <= 0;
 			ch_ack <= 0;
+			DT.printPrefix("RX", 0);
 			$display("rx initialized");
 
 		end else begin
@@ -92,13 +97,16 @@ module rx (
 				state <= ST_LATCHED;
 				REG_FLIT <= ch_flit;
 				sw_chnl <= 0;
+				DT.printPrefix("RX", 0);
 				$display("req arrived, latched flit");
 
 			end else if (state == ST_LATCHED) begin
 
 				if (head_flit) begin
+					DT.printPrefix("RX", 0);
 					$display("flit decoded: head");
 				end else begin
+					DT.printPrefix("RX", 0);
 					$display("flit decoded: body");
 				end
 
@@ -109,6 +117,7 @@ module rx (
 				REG_OUT_CHANNEL <= 0; //LUT[destination];
 				state <= ST_BUF;
 
+				DT.printPrefix("RX", 0);
 				$display("fetched routing information");
 
 			end else if (state == ST_BUF) begin
@@ -119,6 +128,7 @@ module rx (
 					sw_req <= 1;
 					state <= ST_CH_WAIT;
 
+					DT.printPrefix("RX", 0);
 					$display("packet assembly complete, requesting outgoing channel");
 
 				end else begin
@@ -127,6 +137,7 @@ module rx (
 					ch_ack <= ~ch_ack;
 					flit_counter <= flit_counter + 1;
 
+					DT.printPrefix("RX", 0);
 					$display("added flit %g to buffer", flit_counter);
 
 				end
@@ -136,18 +147,22 @@ module rx (
 				if (sw_gnt) begin
 
 					state <= ST_SEND;
-					$display("granted outgoing channel, sending ..");
+					DT.printPrefix("RX", 0);
+					$display("granted outgoing channel");
 
 				end
 
 			end else if (state == ST_SEND) begin
 
+				sw_req <= 0;
+
 				if (~sw_gnt) begin
 
-					$display("sending complete");
 					state <= ST_IDLE;
 					ch_ack <= ~ch_ack;
 					flit_counter <= 0;
+					DT.printPrefix("RX", 0);
+					$display("sending complete");
 
 				end
 

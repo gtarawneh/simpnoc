@@ -20,6 +20,9 @@ styles = {
 	'Warning': ('yellow', []),
 	'destination': ('blue', []),
 	'req arrived': ('blue', ['bold']),
+	'added flit': ('green', []),
+	'RX [0]': ('red', []),
+	'TX [0]': ('blue', [])
 };
 
 def main():
