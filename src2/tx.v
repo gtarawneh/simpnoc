@@ -94,27 +94,28 @@ module tx (
 					// initiate first handshake
 					REG_FLIT <= buf_data;
 					ch_req <= ~ch_req;
+					DT.printPrefix("TX", 0);
+					$display("sending flit %g <%g>", flit_counter, buf_data);
 
 				end
 
 			end else if (state == ST_SENDING) begin
 
-				DT.printPrefix("TX", 0);
-				$display("ch_req = %g, ch_ack = %g", ch_req, ch_ack);
-
 				if (ack) begin
 
 					if (flit_counter < 7) begin
 
-						flit_counter <= flit_counter + 1;
+						flit_counter = flit_counter + 1;
 						REG_FLIT <= buf_data;
 						ch_req <= ~ch_req;
 						DT.printPrefix("TX", 0);
-						$display("sending flit %g", flit_counter);
+						$display("sending flit %g <%g>", flit_counter, buf_data);
+						// DT.printPrefix("TX", 0);
+						// $display("buf_addr = %g, buff_data = %g", buf_addr, buf_data);
 
 					end else begin
 
-						flit_counter <= 0;
+						flit_counter = 0;
 						state <= ST_IDLE;
 						sw_gnt <= 0;
 						DT.printPrefix("TX", 0);

@@ -3,6 +3,7 @@
 `include "generator.v"
 `include "rx.v"
 `include "tx.v"
+`include "packet_source.v"
 
 module testbench_rx();
 
@@ -15,24 +16,9 @@ module testbench_rx();
 	wire clk, reset;
 
 	generator u1 (clk, reset);
-		integer i;
-
-	initial begin
-		ch_req <= 0;
-		ch_flit <= 0;
-		#10
-		ch_flit <= 8'b10000000;
-		ch_req <= ~ch_req;
-		for (i=0; i<8; i=i+1) begin
-			#10
-			ch_flit <= 8'b00000000;
-			ch_req <= ~ch_req;
-		end
-	end
 
 	// channel interface:
-	reg ch_req;
-	reg [7:0] ch_flit;
+	wire [7:0] ch_flit;
 
 	// switch interface
 	wire [2:0] sw_chnl;
@@ -40,6 +26,19 @@ module testbench_rx();
 	// buffer interface
 	wire [2:0] buf_addr;
 	wire [7:0] buf_data;
+
+	// source
+
+	packet_source #(
+		.ID(0),
+		.DESTINATION_BITS(1),
+		.DESTINATION(1),
+		.FLITS(8),
+		.SIZE(8),
+		.PAYLOAD(-1)
+	) s1 (
+		clk, reset, ch_req, ch_ack, ch_flit
+	);
 
 	rx u2 (
 		clk,

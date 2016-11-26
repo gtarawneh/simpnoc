@@ -24,6 +24,8 @@ module rx (
 	parameter CHANNEL_BITS = 3; // bits to designate requested output channel
 	parameter BUFF_BITS = 3; // buffer address bits
 
+	localparam FLIT_COUNT = 2 ** BUFF_BITS;
+
 	// inputs:
 
 	input clk, reset;
@@ -45,6 +47,8 @@ module rx (
 	input [BUFF_BITS-1:0] buf_addr;
 	output [SIZE-1:0] buf_data;
 
+	assign buf_data = MEM_BUF[buf_addr];
+
 	// state definitions:
 
 	localparam ST_IDLE    = 3'b000;
@@ -63,6 +67,7 @@ module rx (
 	reg [SIZE-1:0] REG_FLIT;
 	reg [CHANNEL_BITS-1:0] REG_OUT_CHANNEL;
 	reg [7:0] flit_counter;
+	reg [SIZE-1:0] MEM_BUF [FLIT_COUNT-1:0];
 
 	// individual flip-flops:
 
@@ -79,6 +84,8 @@ module rx (
 
 	// main body:
 
+	integer i;
+
 	always @(posedge clk or posedge reset) begin
 
 		if (reset) begin
@@ -89,6 +96,8 @@ module rx (
 			ch_ack <= 0;
 			DT.printPrefix("RX", 0);
 			$display("rx initialized");
+			for (i=0; i<FLIT_COUNT; i=i+1)
+				MEM_BUF[i] <= 0;
 
 		end else begin
 
@@ -98,7 +107,7 @@ module rx (
 				REG_FLIT <= ch_flit;
 				sw_chnl <= 0;
 				DT.printPrefix("RX", 0);
-				$display("req arrived, latched flit");
+				$display("req arrived, latched flit <%g>", ch_flit);
 
 			end else if (state == ST_LATCHED) begin
 
@@ -122,23 +131,29 @@ module rx (
 
 			end else if (state == ST_BUF) begin
 
-				if (flit_counter == 8) begin
+				state <= ST_IDLE;
+				ch_ack <= ~ch_ack;
+				flit_counter <= flit_counter + 1;
+				MEM_BUF[flit_counter] = REG_FLIT;
+				DT.printPrefix("RX", 0);
+				$display("added flit <%g> to buffer[%g]", REG_FLIT, flit_counter);
+
+				if (flit_counter == 7) begin
 
 					sw_chnl <= destination;
 					sw_req <= 1;
 					state <= ST_CH_WAIT;
 
 					DT.printPrefix("RX", 0);
-					$display("packet assembly complete, requesting outgoing channel");
+					$display("packet assembly complete, content of buffer:");
 
-				end else begin
-
-					state <= ST_IDLE;
-					ch_ack <= ~ch_ack;
-					flit_counter <= flit_counter + 1;
+					for (i=0; i<FLIT_COUNT; i=i+1) begin
+						DT.printPrefix("RX", 0);
+						$display("MEM_BUF[%g] = %g", i, MEM_BUF[i]);
+					end
 
 					DT.printPrefix("RX", 0);
-					$display("added flit %g to buffer", flit_counter);
+					$display("requesting outgoing channel");
 
 				end
 
