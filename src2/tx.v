@@ -56,7 +56,6 @@ module tx (
 
 	// data registers
 
-	reg [SIZE-1:0] REG_FLIT;
 	reg [BUFF_BITS-1:0] flit_counter;
 
 	assign buf_addr = flit_counter;
@@ -76,9 +75,9 @@ module tx (
 		if (reset) begin
 
 			state        <= ST_IDLE;
-			REG_FLIT     <= 0;
 			flit_counter <= 0;
 			ch_req       <= 0;
+			ch_flit      <= 0;
 
 		end else begin
 
@@ -92,10 +91,10 @@ module tx (
 					DT.printPrefix("TX", 0);
 					$display("received a request to send, transmitting ...");
 					// initiate first handshake
-					REG_FLIT <= buf_data;
+					ch_flit <= buf_data;
 					ch_req <= ~ch_req;
 					DT.printPrefix("TX", 0);
-					$display("sending flit %g <%g>", flit_counter, buf_data);
+					$display("sending flit %g <0x%h>", flit_counter, buf_data);
 
 				end
 
@@ -106,10 +105,10 @@ module tx (
 					if (flit_counter < 7) begin
 
 						flit_counter = flit_counter + 1;
-						REG_FLIT <= buf_data;
+						ch_flit <= buf_data;
 						ch_req <= ~ch_req;
 						DT.printPrefix("TX", 0);
-						$display("sending flit %g <%g>", flit_counter, buf_data);
+						$display("sending flit %g <0x%h>", flit_counter, buf_data);
 						// DT.printPrefix("TX", 0);
 						// $display("buf_addr = %g, buff_data = %g", buf_addr, buf_data);
 

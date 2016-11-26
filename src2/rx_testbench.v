@@ -4,6 +4,7 @@
 `include "rx.v"
 `include "tx.v"
 `include "packet_source.v"
+`include "packet_sink.v"
 
 module testbench_rx();
 
@@ -34,8 +35,7 @@ module testbench_rx();
 		.DESTINATION_BITS(1),
 		.DESTINATION(1),
 		.FLITS(8),
-		.SIZE(8),
-		.PAYLOAD(-1)
+		.SIZE(8)
 	) s1 (
 		clk, reset, ch_req, ch_ack, ch_flit
 	);
@@ -68,6 +68,12 @@ module testbench_rx();
 		buf_data
 	);
 
-	assign ch2_ack = ch2_req;
+	packet_sink u4 (
+		clk,
+		reset,
+		ch2_req,
+		ch2_flit,
+		ch2_ack
+	);
 
 endmodule

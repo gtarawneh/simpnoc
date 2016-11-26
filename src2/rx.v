@@ -20,6 +20,8 @@ module rx (
 
 	// parameters:
 
+	parameter MOD_NAME = "RX";
+	parameter SINK_PACKETS = 0;
 	parameter SIZE = 8; // flit size (bits)
 	parameter CHANNEL_BITS = 3; // bits to designate requested output channel
 	parameter BUFF_BITS = 3; // buffer address bits
@@ -94,8 +96,6 @@ module rx (
 			flit_counter <= 0;
 			sw_req <= 0;
 			ch_ack <= 0;
-			DT.printPrefix("RX", 0);
-			$display("rx initialized");
 			for (i=0; i<FLIT_COUNT; i=i+1)
 				MEM_BUF[i] <= 0;
 
@@ -106,16 +106,16 @@ module rx (
 				state <= ST_LATCHED;
 				REG_FLIT <= ch_flit;
 				sw_chnl <= 0;
-				DT.printPrefix("RX", 0);
-				$display("req arrived, latched flit <%g>", ch_flit);
+				DT.printPrefix(MOD_NAME, 0);
+				$display("req arrived, latched flit <0x%h>", ch_flit);
 
 			end else if (state == ST_LATCHED) begin
 
 				if (head_flit) begin
-					DT.printPrefix("RX", 0);
+					DT.printPrefix(MOD_NAME, 0);
 					$display("flit decoded: head");
 				end else begin
-					DT.printPrefix("RX", 0);
+					DT.printPrefix(MOD_NAME, 0);
 					$display("flit decoded: body");
 				end
 
@@ -126,7 +126,7 @@ module rx (
 				REG_OUT_CHANNEL <= 0; //LUT[destination];
 				state <= ST_BUF;
 
-				DT.printPrefix("RX", 0);
+				DT.printPrefix(MOD_NAME, 0);
 				$display("fetched routing information");
 
 			end else if (state == ST_BUF) begin
@@ -135,25 +135,49 @@ module rx (
 				ch_ack <= ~ch_ack;
 				flit_counter <= flit_counter + 1;
 				MEM_BUF[flit_counter] = REG_FLIT;
-				DT.printPrefix("RX", 0);
-				$display("added flit <%g> to buffer[%g]", REG_FLIT, flit_counter);
+				DT.printPrefix(MOD_NAME, 0);
+				$display("added flit to buffer[%g]", flit_counter);
 
 				if (flit_counter == 7) begin
 
-					sw_chnl <= destination;
-					sw_req <= 1;
-					state <= ST_CH_WAIT;
+					if (SINK_PACKETS) begin
 
-					DT.printPrefix("RX", 0);
-					$display("packet assembly complete, content of buffer:");
+						state <= ST_IDLE;
 
-					for (i=0; i<FLIT_COUNT; i=i+1) begin
-						DT.printPrefix("RX", 0);
-						$display("MEM_BUF[%g] = %g", i, MEM_BUF[i]);
+						DT.printPrefix(MOD_NAME, 0);
+						$display("consumed packet <0x%h>", {
+							MEM_BUF[7],
+							MEM_BUF[6],
+							MEM_BUF[5],
+							MEM_BUF[4],
+							MEM_BUF[3],
+							MEM_BUF[2],
+							MEM_BUF[1],
+							MEM_BUF[0]
+						});
+
+					end else begin
+
+						sw_chnl <= destination;
+						sw_req <= 1;
+						state <= ST_CH_WAIT;
+
+						DT.printPrefix(MOD_NAME, 0);
+						$display("assembled packet <0x%h>", {
+							MEM_BUF[7],
+							MEM_BUF[6],
+							MEM_BUF[5],
+							MEM_BUF[4],
+							MEM_BUF[3],
+							MEM_BUF[2],
+							MEM_BUF[1],
+							MEM_BUF[0]
+						});
+
+						DT.printPrefix(MOD_NAME, 0);
+						$display("requesting outgoing channel");
+
 					end
-
-					DT.printPrefix("RX", 0);
-					$display("requesting outgoing channel");
 
 				end
 
@@ -162,7 +186,7 @@ module rx (
 				if (sw_gnt) begin
 
 					state <= ST_SEND;
-					DT.printPrefix("RX", 0);
+					DT.printPrefix(MOD_NAME, 0);
 					$display("granted outgoing channel");
 
 				end
@@ -176,7 +200,7 @@ module rx (
 					state <= ST_IDLE;
 					ch_ack <= ~ch_ack;
 					flit_counter <= 0;
-					DT.printPrefix("RX", 0);
+					DT.printPrefix(MOD_NAME, 0);
 					$display("sending complete");
 
 				end
