@@ -185,6 +185,7 @@ module rx (
 
 				if (sw_gnt) begin
 
+					sw_req <= 0;
 					state <= ST_SEND;
 					DT.printPrefix(MOD_NAME, 0);
 					$display("granted outgoing channel");
@@ -192,8 +193,6 @@ module rx (
 				end
 
 			end else if (state == ST_SEND) begin
-
-				sw_req <= 0;
 
 				if (~sw_gnt) begin
 
