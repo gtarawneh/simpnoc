@@ -7,11 +7,11 @@ import sys
 
 styles = {
 	'Router': ('blue', []),
-	# 'Source': ('green', []),
+	'Source|Emitter': ('green', []),
 	'FIFO': ('yellow', []),
 	'read_ptr|write_ptr|full|empty': ('magenta', []),
 	'TX_LOGIC|RX_LOGIC': ('cyan',[]),
-	# 'Sink': ('red', []),
+	'Sink|Consumer': ('red', []),
 	# 'received|sending|pushing|fetching|acknowledging': (None, ['bold']),
 	'pushed|popped': ('red', ['bold']),
 	'found': (None, ['bold']),
@@ -27,7 +27,8 @@ styles = {
 	'Packet Sink [0]': ('red', []),
 	'head': ('red', ['bold']),
 	'body': ('magenta', []),
-	'created packet|assembled packet|consumed packet': ('blue', ['bold'])
+	'created packet|assembled packet|consumed packet': ('blue', ['bold']),
+	'Arbiter': ('blue', [])
 };
 
 def main():

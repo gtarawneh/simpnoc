@@ -64,8 +64,8 @@ module arbiter (
 					j = (i + selected) % COUNT;
 
 					if (reqs_in[j] == 1) begin
-						DT.printPrefix("ARBITER", 0);
-						$display("selected = %g", j);
+						DT.printPrefix("Arbiter", 0);
+						$display("start handshake (channel %g)", j);
 						selected_next = j;
 						req_out = 1;
 						handshake_active = 1;
@@ -81,7 +81,7 @@ module arbiter (
 				acks_in[selected] = ack_out;
 
 				if (~req_out && ~ack_out) begin
-					DT.printPrefix("ARBITER", 0);
+					DT.printPrefix("Arbiter", 0);
 					$display("finished handshake (channel %g)", selected);
 					handshake_active = 0;
 				end
