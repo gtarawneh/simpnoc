@@ -20,6 +20,7 @@ module rx (
 
 	// parameters:
 
+	parameter ID = 0;
 	parameter MOD_NAME = "RX";
 	parameter SINK_PACKETS = 0;
 	parameter SIZE = 8; // flit size (bits)
@@ -106,16 +107,16 @@ module rx (
 				state <= ST_LATCHED;
 				REG_FLIT <= ch_flit;
 				sw_chnl <= 0;
-				DT.printPrefix(MOD_NAME, 0);
+				DT.printPrefix(MOD_NAME, ID);
 				$display("req arrived, latched flit <0x%h>", ch_flit);
 
 			end else if (state == ST_LATCHED) begin
 
 				if (head_flit) begin
-					DT.printPrefix(MOD_NAME, 0);
+					DT.printPrefix(MOD_NAME, ID);
 					$display("flit decoded: head");
 				end else begin
-					DT.printPrefix(MOD_NAME, 0);
+					DT.printPrefix(MOD_NAME, ID);
 					$display("flit decoded: body");
 				end
 
@@ -126,7 +127,7 @@ module rx (
 				REG_OUT_CHANNEL <= 0; //LUT[destination];
 				state <= ST_BUF;
 
-				DT.printPrefix(MOD_NAME, 0);
+				DT.printPrefix(MOD_NAME, ID);
 				$display("fetched routing information");
 
 			end else if (state == ST_BUF) begin
@@ -135,16 +136,17 @@ module rx (
 				ch_ack <= ~ch_ack;
 				flit_counter <= flit_counter + 1;
 				MEM_BUF[flit_counter] = REG_FLIT;
-				DT.printPrefix(MOD_NAME, 0);
-				$display("added flit to buffer[%g]", flit_counter);
+				DT.printPrefix(MOD_NAME, ID);
+				$display("stored flit in buffer[%g]", flit_counter);
 
 				if (flit_counter == 7) begin
 
 					if (SINK_PACKETS) begin
 
 						state <= ST_IDLE;
+						flit_counter <= 0;
 
-						DT.printPrefix(MOD_NAME, 0);
+						DT.printPrefix(MOD_NAME, ID);
 						$display("consumed packet <0x%h>", {
 							MEM_BUF[7],
 							MEM_BUF[6],
@@ -162,7 +164,7 @@ module rx (
 						sw_req <= 1;
 						state <= ST_CH_WAIT;
 
-						DT.printPrefix(MOD_NAME, 0);
+						DT.printPrefix(MOD_NAME, ID);
 						$display("assembled packet <0x%h>", {
 							MEM_BUF[7],
 							MEM_BUF[6],
@@ -174,7 +176,7 @@ module rx (
 							MEM_BUF[0]
 						});
 
-						DT.printPrefix(MOD_NAME, 0);
+						DT.printPrefix(MOD_NAME, ID);
 						$display("requesting outgoing channel");
 
 					end
@@ -187,7 +189,7 @@ module rx (
 
 					sw_req <= 0;
 					state <= ST_SEND;
-					DT.printPrefix(MOD_NAME, 0);
+					DT.printPrefix(MOD_NAME, ID);
 					$display("granted outgoing channel");
 
 				end
@@ -199,7 +201,7 @@ module rx (
 					state <= ST_IDLE;
 					ch_ack <= ~ch_ack;
 					flit_counter <= 0;
-					DT.printPrefix(MOD_NAME, 0);
+					DT.printPrefix(MOD_NAME, ID);
 					$display("sending complete");
 
 				end

@@ -4,7 +4,6 @@
 `include "arbiter.v"
 `include "random_emitter.v"
 `include "random_consumer.v"
-// `include "sink.v"
 
 module testbench_rx();
 

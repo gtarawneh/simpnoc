@@ -54,26 +54,22 @@ module arbiter (
 
 		end else begin
 
-			// if (~sel_req & ~sel_ack) begin
-			if (~handshake_active) begin
+			if (~handshake_active) begin : BLOCK1
 
-				selected_next = selected;
-
-				for (i=0; i<COUNT && (selected_next == selected); i=i+1) begin
+				for (i=0; i<COUNT && !handshake_active; i=i+1) begin
 
 					j = (i + selected) % COUNT;
 
 					if (reqs_in[j] == 1) begin
 						DT.printPrefix("Arbiter", 0);
 						$display("start handshake (channel %g)", j);
-						selected_next = j;
+						handshake_active = 1;
+						selected = j;
 						req_out = 1;
 						handshake_active = 1;
 					end
 
 				end
-
-				selected = selected_next;
 
 			end else begin
 
@@ -82,7 +78,7 @@ module arbiter (
 
 				if (~req_out && ~ack_out) begin
 					DT.printPrefix("Arbiter", 0);
-					$display("finished handshake (channel %g)", selected);
+					$display("finished handshake");
 					handshake_active = 0;
 				end
 
