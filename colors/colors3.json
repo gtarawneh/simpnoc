@@ -1,0 +1,9 @@
+{
+    "!!": "red+bold",
+    "<[\\d]+>": "magenta",
+    "Arbiter \\[\\d\\]+": "blue",
+    "Generated": "green",
+    "(?:Sink|Consumer) \\[\\d\\]+": "red",
+    "(?:Source|Emitter) \\[\\d\\]+": "green",
+    "\\(channel \\d\\)": "cyan"
+}
