@@ -10,7 +10,6 @@ module tx (
 		ch_flit,
 		ch_ack,
 		sw_req,
-		sw_chnl,
 		sw_gnt,
 		buf_addr,
 		buf_data
@@ -21,7 +20,6 @@ module tx (
 	// parameters:
 
 	parameter SIZE = 8; // flit size (bits)
-	parameter CHANNEL_BITS = 3; // bits to designate requested output channel
 	parameter BUFF_BITS = 3; // buffer address bits
 
 	// inputs:
@@ -37,7 +35,6 @@ module tx (
 	// switch interface:
 
 	input sw_req;
-	input [CHANNEL_BITS-1:0] sw_chnl;
 	output reg sw_gnt;
 
 	// buffer interface:
@@ -49,6 +46,7 @@ module tx (
 
 	localparam ST_IDLE = 3'b000;
 	localparam ST_SENDING  = 3'b001;
+	localparam ST_WAIT_REQ_DOWN = 3'b010;
 
 	// state registers
 
@@ -86,7 +84,7 @@ module tx (
 				if (sw_req) begin
 
 					state <= ST_SENDING;
-					flit_counter <= 0;
+					flit_counter <= 1;
 					sw_gnt <= 1;
 					DT.printPrefix("TX", 0);
 					$display("received a request to send, transmitting ...");
@@ -102,26 +100,32 @@ module tx (
 
 				if (ack) begin
 
-					if (flit_counter < 7) begin
+					if (flit_counter != 0) begin
 
-						flit_counter = flit_counter + 1;
+						flit_counter <= flit_counter + 1;
 						ch_flit <= buf_data;
 						ch_req <= ~ch_req;
 						DT.printPrefix("TX", 0);
 						$display("sending flit %g <0x%h>", flit_counter, buf_data);
-						// DT.printPrefix("TX", 0);
-						// $display("buf_addr = %g, buff_data = %g", buf_addr, buf_data);
 
 					end else begin
 
 						flit_counter = 0;
-						state <= ST_IDLE;
+						state <= ST_WAIT_REQ_DOWN;
 						sw_gnt <= 0;
 						DT.printPrefix("TX", 0);
-						$display("end of transmitting, returning to idle");
+						$display("end of transmission");
 
 					end
 
+				end
+
+			end else if (state == ST_WAIT_REQ_DOWN) begin
+
+				if (~sw_req) begin
+					DT.printPrefix("TX", 0);
+					$display("returning to idle");
+					state <= ST_IDLE;
 				end
 
 			end

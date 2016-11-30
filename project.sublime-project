@@ -3,7 +3,7 @@
 	[
 		{
 			"path": ".",
-			"folder_exclude_patterns": ["old", "build", "output", "src-simp", "routing_tables", "diagrams", "srcx", "gen"],
+			"folder_exclude_patterns": ["old", "build", "output", "src-simp", "routing_tables", "diagrams", "src", "gen"],
 		}
 	]
 }

@@ -12,27 +12,29 @@ module arbiter (
 		acks_in,
 		req_out,
 		ack_out,
-		selected
+		selected,
+		active
 	);
 
 	DebugTasks DT();
 
-	parameter COUNT = 5; // number of clients
-	parameter COUNT_BITS = 3;
+	parameter ID = 0;
+	parameter CHANNELS = 5; // number of clients (255 max)
+	parameter CHANNEL_BITS = 3;
 
 	// inputs:
 
 	input clk, reset;
 
-	input [COUNT-1:0] reqs_in;
-	output reg [COUNT-1:0] acks_in;
+	input [CHANNELS-1:0] reqs_in;
+	output reg [CHANNELS-1:0] acks_in;
 
 	output reg req_out;
 	input ack_out;
 
-	output reg [COUNT_BITS-1:0] selected;
+	output reg [CHANNEL_BITS-1:0] selected;
 
-	reg handshake_active; // state register
+	output reg active; // 1 when handshake in progress, 0 otheriwse
 
 	// body
 
@@ -41,7 +43,6 @@ module arbiter (
 
 	integer i;
 	integer j;
-	integer selected_next;
 
 	always @(posedge clk or posedge reset) begin
 
@@ -50,23 +51,22 @@ module arbiter (
 			selected <= 0;
 			acks_in <= 0;
 			req_out <= 0;
-			handshake_active <= 0;
+			active <= 0;
 
 		end else begin
 
-			if (~handshake_active) begin : BLOCK1
+			if (~active) begin : BLOCK1
 
-				for (i=0; i<COUNT && !handshake_active; i=i+1) begin
+				for (i=0; i<CHANNELS && !active; i=i+1) begin
 
-					j = (i + selected) % COUNT;
+					j = (i + selected) % CHANNELS;
 
 					if (reqs_in[j] == 1) begin
-						DT.printPrefix("Arbiter", 0);
-						$display("start handshake (channel %g)", j);
-						handshake_active = 1;
+						DT.printPrefix("Arbiter", ID);
+						$display("start handshake (port %g)", j);
 						selected = j;
 						req_out = 1;
-						handshake_active = 1;
+						active = 1;
 					end
 
 				end
@@ -76,10 +76,13 @@ module arbiter (
 				req_out = reqs_in[selected];
 				acks_in[selected] = ack_out;
 
+				// DT.printPrefix("Arbiter", ID);
+				// $display("req_out = %g, ack_out = %g", req_out, ack_out);
+
 				if (~req_out && ~ack_out) begin
-					DT.printPrefix("Arbiter", 0);
+					DT.printPrefix("Arbiter", ID);
 					$display("finished handshake");
-					handshake_active = 0;
+					active = 0;
 				end
 
 			end

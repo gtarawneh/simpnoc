@@ -13,6 +13,7 @@ module packet_sink (
 
 	// parameters:
 
+	parameter ID = 0;
 	parameter SIZE = 8; // flit size (bits)
 	parameter BUFF_BITS = 3; // buffer address bits
 
@@ -47,6 +48,7 @@ module packet_sink (
 		.SIZE(SIZE),
 		.BUFF_BITS(BUFF_BITS),
 		.MOD_NAME("Packet Sink"),
+		.ID(ID),
 		.SINK_PACKETS(1)
 	) u2 (
 		clk,

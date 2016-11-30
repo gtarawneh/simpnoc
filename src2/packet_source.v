@@ -54,7 +54,7 @@ module packet_source (clk, reset, req, ack, data);
 
 				if (flit_counter == 0) begin
 					DT.printPrefix("Packet Source", ID);
-					$display("created packet <0x%h>", {
+					$display("initiated packet <0x%h>", {
 						MEM_BUF[7],
 						MEM_BUF[6],
 						MEM_BUF[5],

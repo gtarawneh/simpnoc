@@ -26,6 +26,7 @@ module rx (
 	parameter SIZE = 8; // flit size (bits)
 	parameter CHANNEL_BITS = 3; // bits to designate requested output channel
 	parameter BUFF_BITS = 3; // buffer address bits
+	parameter DESTINATION = 0;
 
 	localparam FLIT_COUNT = 2 ** BUFF_BITS;
 
@@ -83,7 +84,6 @@ module rx (
 	// flit parts (internal nets):
 
 	wire head_flit = REG_FLIT[SIZE-1];
-	wire destination = REG_FLIT[SIZE-2:SIZE-2-CHANNEL_BITS];
 
 	// main body:
 
@@ -97,6 +97,7 @@ module rx (
 			flit_counter <= 0;
 			sw_req <= 0;
 			ch_ack <= 0;
+			REG_OUT_CHANNEL <= 0;
 			for (i=0; i<FLIT_COUNT; i=i+1)
 				MEM_BUF[i] <= 0;
 
@@ -106,7 +107,6 @@ module rx (
 
 				state <= ST_LATCHED;
 				REG_FLIT <= ch_flit;
-				sw_chnl <= 0;
 				DT.printPrefix(MOD_NAME, ID);
 				$display("req arrived, latched flit <0x%h>", ch_flit);
 
@@ -124,7 +124,7 @@ module rx (
 
 			end else if (state == ST_RC) begin
 
-				REG_OUT_CHANNEL <= 0; //LUT[destination];
+				REG_OUT_CHANNEL <= DESTINATION;
 				state <= ST_BUF;
 
 				DT.printPrefix(MOD_NAME, ID);
@@ -145,9 +145,8 @@ module rx (
 
 						state <= ST_IDLE;
 						flit_counter <= 0;
-
 						DT.printPrefix(MOD_NAME, ID);
-						$display("consumed packet <0x%h>", {
+						$display("destroyed packet <0x%h>", {
 							MEM_BUF[7],
 							MEM_BUF[6],
 							MEM_BUF[5],
@@ -160,7 +159,7 @@ module rx (
 
 					end else begin
 
-						sw_chnl <= destination;
+						sw_chnl <= REG_OUT_CHANNEL;
 						sw_req <= 1;
 						state <= ST_CH_WAIT;
 
@@ -177,7 +176,7 @@ module rx (
 						});
 
 						DT.printPrefix(MOD_NAME, ID);
-						$display("requesting outgoing channel");
+						$display("requesting allocation (channel %g)", REG_OUT_CHANNEL);
 
 					end
 

@@ -1,7 +1,15 @@
 {
     "!!": "red+bold",
     "<0x[0-9a-f]+>": "magenta",
-    "(?:created|assembled|consumed) packet": "blue+bold",
+    "(?:initiated|assembled|destroyed) packet": "blue+bold",
     "head": "red+bold",
-    "\\(channel \\d\\)": "cyan"
+    "\\(channel \\d\\)": "cyan",
+    "\\(port \\d\\)": "cyan",
+    "Arbiter": "blue",
+    "sending flit \\d": "blue+bold",
+    "made connection": "red+bold",
+    "---req\\(\\d\\)-->": "red",
+    "<--ack\\(\\d\\)---": "green",
+    "---dat\\(0x[0-9a-f]+\\)-->": "cyan",
+    "req arrived": "bold"
 }
