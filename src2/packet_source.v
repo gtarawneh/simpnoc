@@ -10,6 +10,7 @@ module packet_source (clk, reset, req, ack, data);
 	parameter FLITS = 8;
 	parameter SIZE = 8;
 	parameter DESTINATION_BITS = 4;
+	parameter SEED = 1;
 
 	input clk, reset, ack;
 	output reg req;
@@ -17,14 +18,14 @@ module packet_source (clk, reset, req, ack, data);
 
 	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
 
-	integer seed = ID;
-
 	wire [DESTINATION_BITS-1:0] destination = DESTINATION;
 
 	reg [7:0] flit_counter;
 	reg ack_old;
 	reg busy;
 	wire ack_received = ack ^ ack_old;
+
+	integer seed = SEED;
 
 	DebugTasks DT();
 
@@ -39,12 +40,12 @@ module packet_source (clk, reset, req, ack, data);
 			flit_counter <= 0;
 			ack_old <= 0;
 			busy <= 0;
+			MEM_BUF[0] = $urandom(seed); // dummy to initialize rng
 			for (i=0; i<FLITS; i=i+1) begin
 				MEM_BUF[i] = $urandom(seed);
-				MEM_BUF[i][SIZE-1] = 0;
+				MEM_BUF[i][SIZE-1] = 0; // mark flit as body
 			end
-
-			MEM_BUF[0][SIZE-1] = 1;
+			MEM_BUF[0][SIZE-1] = 1; // mark first flit as head
 
 		end else begin
 

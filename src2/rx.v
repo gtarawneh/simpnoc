@@ -13,7 +13,7 @@ module rx (
 		sw_chnl,
 		sw_gnt,
 		buf_addr,
-		buf_data
+		buf_data,
 	);
 
 	DebugTasks DT();
@@ -124,7 +124,9 @@ module rx (
 
 			end else if (state == ST_RC) begin
 
-				REG_OUT_CHANNEL <= DESTINATION;
+				// REG_OUT_CHANNEL <= DESTINATION;
+				REG_OUT_CHANNEL <= REG_FLIT % 2;
+				// REG_OUT_CHANNEL <= 1;
 				state <= ST_BUF;
 
 				DT.printPrefix(MOD_NAME, ID);

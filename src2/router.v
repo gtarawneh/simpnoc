@@ -11,6 +11,10 @@
 
 module router();
 
+	localparam SEED = 5;
+	localparam CHANNELS = 5;
+	localparam CHANNEL_BITS = 8;
+
 	DebugTasks DT();
 
 	localparam DURATION = 500; // duration of simulation (time units)
@@ -22,9 +26,6 @@ module router();
 	wire clk, reset;
 
 	generator u1 (clk, reset);
-
-	localparam CHANNELS = 5;
-	localparam CHANNEL_BITS = 8;
 
 	// rx channel interface:
 	wire rx_ch_req [CHANNELS-1:0];
@@ -66,7 +67,8 @@ module router();
 				.DESTINATION_BITS(1),
 				.DESTINATION(1),
 				.FLITS(8),
-				.SIZE(8)
+				.SIZE(8),
+				.SEED(i + SEED)
 			) s1 (
 				clk, reset, rx_ch_req[i], rx_ch_ack[i], rx_ch_flit[i]
 			);
@@ -209,7 +211,7 @@ module router();
 
 				for (k=0; k<CHANNELS && ~found; k=k+1) begin // loop through arbiters
 
-					if (selected[k] == i) begin // if instance i is selected by arbiter k:
+					if ((selected[k] == i) && arb_active[k]) begin // if instance i is selected by arbiter k:
 
 						rx_buf_addr[i] = tx_buf_addr[k];
 						found = 1;
