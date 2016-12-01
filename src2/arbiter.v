@@ -19,20 +19,20 @@ module arbiter (
 	DebugTasks DT();
 
 	parameter ID = 0;
-	parameter CHANNELS = 5; // number of clients (255 max)
-	parameter CHANNEL_BITS = 3;
+	parameter PORTS = 5; // number of clients (255 max)
+	parameter PORT_BITS = 3;
 
 	// inputs:
 
 	input clk, reset;
 
-	input [CHANNELS-1:0] reqs_in;
-	output reg [CHANNELS-1:0] acks_in;
+	input [PORTS-1:0] reqs_in;
+	output reg [PORTS-1:0] acks_in;
 
 	output reg req_out;
 	input ack_out;
 
-	output reg [CHANNEL_BITS-1:0] selected;
+	output reg [PORT_BITS-1:0] selected;
 
 	output reg active; // 1 when handshake in progress, 0 otheriwse
 
@@ -57,9 +57,9 @@ module arbiter (
 
 			if (~active) begin : BLOCK1
 
-				for (i=0; i<CHANNELS && !active; i=i+1) begin
+				for (i=0; i<PORTS && !active; i=i+1) begin
 
-					j = (i + selected) % CHANNELS;
+					j = (i + selected) % PORTS;
 
 					if (reqs_in[j] == 1) begin
 						DT.printPrefix("Arbiter", ID);

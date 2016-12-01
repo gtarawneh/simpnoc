@@ -27,8 +27,7 @@ module rx (
 	parameter SINK_PACKETS = 0;
 	parameter SIZE = 8; // flit size (bits)
 	parameter BUFF_BITS = 3; // buffer address bits
-	parameter DESTINATION = 0;
-	parameter CHANNEL_BITS = 8; // bits to designate requested output channel
+	parameter PORT_BITS = 8; // bits to designate requested output port
 
 	localparam DESTINATION_BITS = SIZE-1; // bits to designate requested destination
 	localparam FLITS = 2 ** BUFF_BITS;
@@ -46,7 +45,7 @@ module rx (
 	// switch interface:
 
 	output reg sw_req;
-	output reg [CHANNEL_BITS-1:0] sw_chnl;
+	output reg [PORT_BITS-1:0] sw_chnl;
 	input sw_gnt;
 
 	// buffer interface:
@@ -59,7 +58,7 @@ module rx (
 	// routing table interface:
 
 	output reg [DESTINATION_BITS-1:0] table_addr;
-	input [CHANNEL_BITS-1:0] table_data;
+	input [PORT_BITS-1:0] table_data;
 
 	// state definitions:
 
@@ -77,7 +76,7 @@ module rx (
 	// data registers
 
 	reg [SIZE-1:0] REG_FLIT;
-	reg [CHANNEL_BITS-1:0] REG_OUT_CHANNEL;
+	reg [PORT_BITS-1:0] REG_OUT_PORT;
 	reg [7:0] flit_counter;
 	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
 
@@ -105,7 +104,7 @@ module rx (
 			flit_counter <= 0;
 			sw_req <= 0;
 			ch_ack <= 0;
-			REG_OUT_CHANNEL <= 0;
+			REG_OUT_PORT <= 0;
 			table_addr <= 0;
 			for (i=0; i<FLITS; i=i+1)
 				MEM_BUF[i] <= 0;
@@ -136,11 +135,11 @@ module rx (
 
 			end else if (state == ST_RC) begin
 
-				REG_OUT_CHANNEL <= table_data;
+				REG_OUT_PORT <= table_data;
 				state <= ST_BUF;
 
 				DT.printPrefix(MOD_NAME, ID);
-				$display("obtained routing info (channel %g)", table_data);
+				$display("obtained routing info (port %g)", table_data);
 
 			end else if (state == ST_BUF) begin
 
@@ -171,7 +170,7 @@ module rx (
 
 					end else begin
 
-						sw_chnl <= REG_OUT_CHANNEL;
+						sw_chnl <= REG_OUT_PORT;
 						sw_req <= 1;
 						state <= ST_CH_WAIT;
 
@@ -188,7 +187,7 @@ module rx (
 						});
 
 						DT.printPrefix(MOD_NAME, ID);
-						$display("requesting allocation (channel %g)", REG_OUT_CHANNEL);
+						$display("requesting allocation (port %g)", REG_OUT_PORT);
 
 					end
 
@@ -201,7 +200,7 @@ module rx (
 					sw_req <= 0;
 					state <= ST_SEND;
 					DT.printPrefix(MOD_NAME, ID);
-					$display("granted outgoing channel");
+					$display("granted outgoing port");
 
 				end
 

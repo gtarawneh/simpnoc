@@ -13,12 +13,12 @@ module router (reset, clk, table_addr, table_data);
 	// parameters
 
 	parameter SEED = 5;
-	parameter CHANNELS = 5;
-	parameter CHANNEL_BITS = 8;
+	parameter PORTS = 5;
+	parameter PORT_BITS = 8;
 	parameter SIZE = 8;
 
-	localparam DESTINATION_BITS = SIZE - 1;
-	localparam DESTINATIONS = 2 ** DESTINATION_BITS;
+	localparam DEST_BITS = SIZE - 1;
+	localparam DESTS = 2 ** DEST_BITS; // destinations
 
 	// debugging modules
 
@@ -27,46 +27,46 @@ module router (reset, clk, table_addr, table_data);
 	// inputs and output
 
 	input reset, clk;
-	input [CHANNEL_BITS-1:0] table_data;
-	output reg [DESTINATION_BITS-1:0] table_addr;
+	input [PORT_BITS-1:0] table_data;
+	output reg [DEST_BITS-1:0] table_addr;
 
 	// rx channel interface:
 
-	wire rx_ch_req [CHANNELS-1:0];
-	wire rx_ch_ack [CHANNELS-1:0];
-	wire [7:0] rx_ch_flit [CHANNELS-1:0];
+	wire rx_ch_req [PORTS-1:0];
+	wire rx_ch_ack [PORTS-1:0];
+	wire [7:0] rx_ch_flit [PORTS-1:0];
 
 	// switch interface:
 
-	wire [CHANNELS-1:0] rx_sw_req;
-	reg [CHANNELS-1:0] rx_sw_ack;
-	wire [CHANNEL_BITS-1:0] rx_sw_chnl [CHANNELS-1:0];
+	wire [PORTS-1:0] rx_sw_req;
+	reg [PORTS-1:0] rx_sw_ack;
+	wire [PORT_BITS-1:0] rx_sw_chnl [PORTS-1:0];
 
 	// buffer interface:
 
-	reg [2:0] rx_buf_addr [CHANNELS-1:0];
-	wire [7:0] rx_buf_data [CHANNELS-1:0];
+	reg [2:0] rx_buf_addr [PORTS-1:0];
+	wire [7:0] rx_buf_data [PORTS-1:0];
 
 	// tx channel interface:
 
-	wire [CHANNELS-1:0] tx_ch_req;
-	wire [CHANNELS-1:0] tx_ch_ack;
-	wire [7:0] tx_ch_flit [CHANNELS-1:0];
+	wire [PORTS-1:0] tx_ch_req;
+	wire [PORTS-1:0] tx_ch_ack;
+	wire [7:0] tx_ch_flit [PORTS-1:0];
 
 	// arbiters:
 
-	wire [CHANNEL_BITS-1:0] selected [CHANNELS-1:0];
-	wire arb_active [CHANNELS-1:0];
-	wire [2:0] tx_buf_addr [CHANNELS-1:0];
-	reg [7:0] tx_buf_data [CHANNELS-1:0];
-	reg [CHANNELS-1:0] arb_reqs_in [CHANNELS-1:0];
-	wire [CHANNELS-1:0] arb_acks_in [CHANNELS-1:0];
-	wire [CHANNELS-1:0] tx_sw_req;
-	wire [CHANNELS-1:0] tx_sw_ack;
+	wire [PORT_BITS-1:0] selected [PORTS-1:0];
+	wire arb_active [PORTS-1:0];
+	wire [2:0] tx_buf_addr [PORTS-1:0];
+	reg [7:0] tx_buf_data [PORTS-1:0];
+	reg [PORTS-1:0] arb_reqs_in [PORTS-1:0];
+	wire [PORTS-1:0] arb_acks_in [PORTS-1:0];
+	wire [PORTS-1:0] tx_sw_req;
+	wire [PORTS-1:0] tx_sw_ack;
 
 	// internal routing tables:
 
-	reg [CHANNEL_BITS-1:0] int_table [DESTINATIONS-1:0];
+	reg [PORT_BITS-1:0] int_table [DESTS-1:0];
 	reg tables_ready;
 
 	// routing table preloading
@@ -77,7 +77,7 @@ module router (reset, clk, table_addr, table_data);
 
 			integer j;
 
-			for (j=0; j < DESTINATIONS; j=j+1)
+			for (j=0; j < DESTS; j=j+1)
 				int_table[j] <= 0;
 
 			table_addr <= 0;
@@ -111,7 +111,7 @@ module router (reset, clk, table_addr, table_data);
 
 		genvar i;
 
-		for (i=0; i<CHANNELS; i=i+1) begin: BLOCK1
+		for (i=0; i<PORTS; i=i+1) begin: BLOCK1
 
 			packet_source #(
 				.ID(i),
@@ -127,13 +127,12 @@ module router (reset, clk, table_addr, table_data);
 			);
 
 			// routing table interface:
-			wire [DESTINATION_BITS-1:0] rx_table_addr;
-			reg [CHANNEL_BITS-1:0] rx_table_data;
+			wire [DEST_BITS-1:0] rx_table_addr;
+			reg [PORT_BITS-1:0] rx_table_data;
 
 			rx #(
 				.ID(i),
-				.DESTINATION(i),
-				.CHANNEL_BITS(CHANNEL_BITS)
+				.PORT_BITS(PORT_BITS)
 			) u2 (
 				clk,
 				reset,
@@ -155,8 +154,8 @@ module router (reset, clk, table_addr, table_data);
 
 			arbiter #(
 				.ID(i),
-				.CHANNELS(CHANNELS),
-				.CHANNEL_BITS(CHANNEL_BITS)
+				.PORTS(PORTS),
+				.PORT_BITS(PORT_BITS)
 			) a1 (
 				.clk(clk),
 				.reset(reset),
@@ -182,7 +181,7 @@ module router (reset, clk, table_addr, table_data);
 
 			packet_sink #(
 				.ID(i),
-				.CHANNEL_BITS(CHANNEL_BITS)
+				.PORT_BITS(PORT_BITS)
 			) u4 (
 				clk,
 				reset,
@@ -203,7 +202,7 @@ module router (reset, clk, table_addr, table_data);
 
 		genvar j;
 
-		for (j=0; j<CHANNELS; j=j+1) begin
+		for (j=0; j<PORTS; j=j+1) begin
 
 			reg [2:0] chnl;
 
@@ -223,8 +222,8 @@ module router (reset, clk, table_addr, table_data);
 
 		// req from rx to arbiter
 
-		for (i=0; i<CHANNELS; i=i+1) begin
-		for (j=0; j<CHANNELS; j=j+1) begin
+		for (i=0; i<PORTS; i=i+1) begin
+		for (j=0; j<PORTS; j=j+1) begin
 
 			// arbiter i, input j
 
@@ -247,7 +246,7 @@ module router (reset, clk, table_addr, table_data);
 
 		// data from rx to (selected) tx
 
-		for (i=0; i<CHANNELS; i=i+1) begin
+		for (i=0; i<PORTS; i=i+1) begin
 
 			always @(*) begin
 
@@ -264,7 +263,7 @@ module router (reset, clk, table_addr, table_data);
 
 		// address from (selected) tx to rx
 
-		for (i=0; i<CHANNELS; i=i+1) begin // for reach RX instance
+		for (i=0; i<PORTS; i=i+1) begin // for reach RX instance
 
 			reg found;
 
@@ -274,7 +273,7 @@ module router (reset, clk, table_addr, table_data);
 
 				found = 0;
 
-				for (k=0; k<CHANNELS && ~found; k=k+1) begin // loop through arbiters
+				for (k=0; k<PORTS && ~found; k=k+1) begin // loop through arbiters
 
 					if ((selected[k] == i) && arb_active[k]) begin // if instance i is selected by arbiter k:
 

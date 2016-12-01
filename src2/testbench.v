@@ -8,12 +8,12 @@ module testbench();
 	// parameters
 
 	parameter SEED = 5;
-	parameter CHANNELS = 5;
-	parameter CHANNEL_BITS = 8;
+	parameter PORTS = 5;
+	parameter PORT_BITS = 8;
 	parameter SIZE = 8;
 
-	localparam DESTINATION_BITS = SIZE - 1; // bits to designate requested destination
-	localparam DESTINATIONS = 2 ** DESTINATION_BITS;
+	localparam DEST_BITS = SIZE - 1; // bits to designate requested destination
+	localparam DESTS = 2 ** DEST_BITS;
 
 	// simulation control
 
@@ -29,8 +29,8 @@ module testbench();
 
 	// routing table:
 
-	wire [DESTINATION_BITS-1:0] table_addr;
-	reg [CHANNEL_BITS-1:0] table_data;
+	wire [DEST_BITS-1:0] table_addr;
+	reg [PORT_BITS-1:0] table_data;
 
 	always @(*) case (table_addr)
 		0          : table_data = 0;
@@ -44,8 +44,8 @@ module testbench();
 
 	router #(
 		.SEED(SEED),
-		.CHANNELS(CHANNELS),
-		.CHANNEL_BITS(CHANNEL_BITS),
+		.PORTS(PORTS),
+		.PORT_BITS(PORT_BITS),
 		.SIZE(SIZE)
 	) r1 (
 		reset,
