@@ -14,6 +14,8 @@ module rx (
 		sw_gnt,
 		buf_addr,
 		buf_data,
+		table_addr,
+		table_data
 	);
 
 	DebugTasks DT();
@@ -24,11 +26,12 @@ module rx (
 	parameter MOD_NAME = "RX";
 	parameter SINK_PACKETS = 0;
 	parameter SIZE = 8; // flit size (bits)
-	parameter CHANNEL_BITS = 3; // bits to designate requested output channel
 	parameter BUFF_BITS = 3; // buffer address bits
 	parameter DESTINATION = 0;
+	parameter CHANNEL_BITS = 8; // bits to designate requested output channel
 
-	localparam FLIT_COUNT = 2 ** BUFF_BITS;
+	localparam DESTINATION_BITS = SIZE-1; // bits to designate requested destination
+	localparam FLITS = 2 ** BUFF_BITS;
 
 	// inputs:
 
@@ -53,6 +56,11 @@ module rx (
 
 	assign buf_data = MEM_BUF[buf_addr];
 
+	// routing table interface:
+
+	output reg [DESTINATION_BITS-1:0] table_addr;
+	input [CHANNEL_BITS-1:0] table_data;
+
 	// state definitions:
 
 	localparam ST_IDLE    = 3'b000;
@@ -71,7 +79,7 @@ module rx (
 	reg [SIZE-1:0] REG_FLIT;
 	reg [CHANNEL_BITS-1:0] REG_OUT_CHANNEL;
 	reg [7:0] flit_counter;
-	reg [SIZE-1:0] MEM_BUF [FLIT_COUNT-1:0];
+	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
 
 	// individual flip-flops:
 
@@ -98,7 +106,8 @@ module rx (
 			sw_req <= 0;
 			ch_ack <= 0;
 			REG_OUT_CHANNEL <= 0;
-			for (i=0; i<FLIT_COUNT; i=i+1)
+			table_addr <= 0;
+			for (i=0; i<FLITS; i=i+1)
 				MEM_BUF[i] <= 0;
 
 		end else begin
@@ -122,15 +131,16 @@ module rx (
 
 				state <= head_flit ? ST_RC : ST_BUF;
 
+				if (head_flit)
+					table_addr <= REG_FLIT[SIZE-2:0];
+
 			end else if (state == ST_RC) begin
 
-				// REG_OUT_CHANNEL <= DESTINATION;
-				REG_OUT_CHANNEL <= REG_FLIT % 2;
-				// REG_OUT_CHANNEL <= 1;
+				REG_OUT_CHANNEL <= table_data;
 				state <= ST_BUF;
 
 				DT.printPrefix(MOD_NAME, ID);
-				$display("fetched routing information");
+				$display("obtained routing info (channel %g)", table_data);
 
 			end else if (state == ST_BUF) begin
 

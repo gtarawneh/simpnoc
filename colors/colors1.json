@@ -11,5 +11,6 @@
     "---req\\(\\d\\)-->": "red",
     "<--ack\\(\\d\\)---": "green",
     "---dat\\(0x[0-9a-f]+\\)-->": "cyan",
+    "<--adr\\(0x[0-9a-f]+\\)---": "red",
     "req arrived": "bold"
 }
