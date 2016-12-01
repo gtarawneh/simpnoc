@@ -143,18 +143,33 @@ module rx (
 
 			end else if (state == ST_BUF) begin
 
-				state <= ST_IDLE;
-				ch_ack <= ~ch_ack;
+				// store flit in buffer
+
 				flit_counter <= flit_counter + 1;
 				MEM_BUF[flit_counter] = REG_FLIT;
 				DT.printPrefix(MOD_NAME, ID);
 				$display("stored flit in buffer[%g]", flit_counter);
 
-				if (flit_counter == 7) begin
+				// determine next state
+
+				if (flit_counter < 7) begin
+
+					// buffer not full yet, acknowledge and go back to idle
+
+					state <= ST_IDLE;
+					ch_ack <= ~ch_ack;
+
+				end else begin
+
+					// buffer is full now
 
 					if (SINK_PACKETS) begin
 
+						// if configured as a sink, destroy the packet,
+						// acknowledge then go back to idle
+
 						state <= ST_IDLE;
+						ch_ack <= ~ch_ack;
 						flit_counter <= 0;
 						DT.printPrefix(MOD_NAME, ID);
 						$display("destroyed packet <0x%h>", {
@@ -169,6 +184,8 @@ module rx (
 						});
 
 					end else begin
+
+						// if not sink, then start routing computation
 
 						sw_chnl <= REG_OUT_PORT;
 						sw_req <= 1;

@@ -12,5 +12,6 @@
     "<--ack\\(\\d\\)---": "green",
     "---dat\\(0x[0-9a-f]+\\)-->": "cyan",
     "<--adr\\(0x[0-9a-f]+\\)---": "red",
-    "req arrived": "bold"
+    "Transferred correctly : ([0-9]+ \\(100.0%\\))": "green",
+    "Ghost Packets [ ]+ : (0)": "green"
 }
