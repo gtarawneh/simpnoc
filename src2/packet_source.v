@@ -3,7 +3,7 @@
 
 `include "debug_tasks.v"
 
-module packet_source (clk, reset, req, ack, data);
+module packet_source (clk, reset, req, ack, data, done);
 
 	// parameters
 
@@ -22,6 +22,7 @@ module packet_source (clk, reset, req, ack, data);
 	input clk, reset, ack;
 	output reg req;
 	output reg [SIZE-1:0] data;
+	output reg done;
 
 	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
 	reg [7:0] flit_counter;
@@ -44,6 +45,7 @@ module packet_source (clk, reset, req, ack, data);
 			packet_counter <= 0;
 			ack_old <= 0;
 			busy <= 0;
+			done <= 0;
 
 		end else begin
 
@@ -58,8 +60,11 @@ module packet_source (clk, reset, req, ack, data);
 					seed = $urandom(seed); // dummy to initialize rng
 
 					for (i=0; i<FLITS; i=i+1) begin
+
 						MEM_BUF[i] = $urandom(seed);
+
 						MEM_BUF[i][SIZE-1] = 0; // mark flit as body
+
 					end
 
 					MEM_BUF[0][SIZE-1] = 1; // mark first flit as head
@@ -97,11 +102,16 @@ module packet_source (clk, reset, req, ack, data);
 					packet_counter = packet_counter + 1;
 
 					if (more_packets) begin
+
 						DT.printPrefix("Packet Source", ID);
 						$display("sending new packet");
+
 					end else begin
+
+						done <= 1;
 						DT.printPrefix("Packet Source", ID);
 						$display("finished sending all packets");
+
 					end
 
 				end

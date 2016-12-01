@@ -10,18 +10,17 @@ module testbench();
 	parameter SEED = 5;
 	parameter PORTS = 5;
 	parameter PORT_BITS = 8;
-	parameter SIZE = 8;
+	parameter SIZE = 8; // flit bits
+	parameter SRC_PACKETS = 1; // packets per source
 
 	localparam DEST_BITS = SIZE - 1; // bits to designate requested destination
 	localparam DESTS = 2 ** DEST_BITS;
 
 	// simulation control
 
-	localparam DURATION = 5000; // duration of simulation (time units)
+	localparam PAD_DELAY = 0; // cycles to simulate after all packets sent
 
-	initial begin
-		#DURATION $finish;
-	end
+	always @(rx_done) if (&rx_done) #PAD_DELAY $finish;
 
 	wire clk, reset;
 
@@ -32,6 +31,7 @@ module testbench();
 	wire [PORTS-1:0] rx_ch_req;
 	wire [PORTS-1:0] rx_ch_ack;
 	wire [SIZE*PORTS-1:0] rx_ch_data;
+	wire [PORTS-1:0] rx_done;
 
 	wire [PORTS-1:0] tx_ch_req;
 	wire [PORTS-1:0] tx_ch_ack;
@@ -92,13 +92,15 @@ module testbench();
 				.ID(i),
 				.FLITS(8),
 				.SIZE(SIZE),
-				.SEED(i + SEED)
+				.SEED(i + SEED),
+				.PACKETS(SRC_PACKETS)
 			) s1 (
 				clk,
 				reset | ~ready,
 				rx_ch_req[i],
 				rx_ch_ack[i],
-				rx_ch_flit
+				rx_ch_flit,
+				rx_done[i]
 			);
 
 		end
