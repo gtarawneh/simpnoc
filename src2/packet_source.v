@@ -5,29 +5,30 @@
 
 module packet_source (clk, reset, req, ack, data);
 
+	// parameters
+
 	parameter ID = 0;
-	parameter DESTINATION = 0;
 	parameter FLITS = 8;
 	parameter SIZE = 8;
-	parameter DESTINATION_BITS = 4;
 	parameter SEED = 1;
+
+	// debugging modules
+
+	DebugTasks DT();
+
+	// inputs and output
 
 	input clk, reset, ack;
 	output reg req;
 	output reg [SIZE-1:0] data;
 
 	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
-
-	wire [DESTINATION_BITS-1:0] destination = DESTINATION;
-
 	reg [7:0] flit_counter;
 	reg ack_old;
 	reg busy;
 	wire ack_received = ack ^ ack_old;
 
 	integer seed = SEED;
-
-	DebugTasks DT();
 
 	integer i;
 
