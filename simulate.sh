@@ -9,4 +9,4 @@ if [ ! -d "gen" ]; then
 	make
 fi
 
-iverilog -I src -I gen -o $OUT src/testbench.v && vvp $OUT | ./beautify.py
+iverilog -I src -I common -I gen -o $OUT src/testbench.v && vvp $OUT

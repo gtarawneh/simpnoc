@@ -26,7 +26,8 @@ def main():
 	correct = count(isTranCorrect)
 	percCorrect = 100.0*correct/initiated if correct else 0
 	ghost = count(isGhost)
-	print json.dumps(hist, indent=4)
+	if correct != initiated:
+		print json.dumps(hist, indent=4)
 	print "Initiated Packets     : %d" % initiated
 	print "Transferred correctly : %d (%1.1f%%)" % (correct, percCorrect)
 	print "Ghost Packets         : %d" % ghost

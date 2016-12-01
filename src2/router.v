@@ -24,6 +24,7 @@ module router (
 
 	// parameters
 
+	parameter ID = 0;
 	parameter SEED = 5;
 	parameter PORTS = 5;
 	parameter PORT_BITS = 8;
@@ -136,7 +137,8 @@ module router (
 			reg [PORT_BITS-1:0] rx_table_data;
 
 			rx #(
-				.ID(i),
+				.ID(ID),
+				.SUBID(i),
 				.PORT_BITS(PORT_BITS)
 			) u2 (
 				clk,
@@ -158,7 +160,8 @@ module router (
 			end
 
 			arbiter #(
-				.ID(i),
+				.ID(ID),
+				.SUBID(i),
 				.PORTS(PORTS),
 				.PORT_BITS(PORT_BITS)
 			) a1 (
@@ -172,7 +175,11 @@ module router (
 				.active(arb_active[i])
 			);
 
-			tx u3 (
+			tx #(
+				.ID(ID),
+				.SUBID(i),
+				.SIZE(SIZE)
+			) u3 (
 				.clk(clk),
 				.reset(reset),
 				.ch_req(tx_ch_req[i]),

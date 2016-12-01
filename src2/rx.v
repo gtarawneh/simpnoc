@@ -23,6 +23,7 @@ module rx (
 	// parameters:
 
 	parameter ID = 0;
+	parameter SUBID = 0;
 	parameter MOD_NAME = "RX";
 	parameter SINK_PACKETS = 0;
 	parameter SIZE = 8; // flit size (bits)
@@ -115,16 +116,16 @@ module rx (
 
 				state <= ST_LATCHED;
 				REG_FLIT <= ch_flit;
-				DT.printPrefix(MOD_NAME, ID);
+				DT.printPrefixSub(MOD_NAME, SUBID, ID);
 				$display("req arrived, latched flit <0x%h>", ch_flit);
 
 			end else if (state == ST_LATCHED) begin
 
 				if (head_flit) begin
-					DT.printPrefix(MOD_NAME, ID);
+					DT.printPrefixSub(MOD_NAME, SUBID, ID);
 					$display("flit decoded: head");
 				end else begin
-					DT.printPrefix(MOD_NAME, ID);
+					DT.printPrefixSub(MOD_NAME, SUBID, ID);
 					$display("flit decoded: body");
 				end
 
@@ -138,7 +139,7 @@ module rx (
 				REG_OUT_PORT <= table_data;
 				state <= ST_BUF;
 
-				DT.printPrefix(MOD_NAME, ID);
+				DT.printPrefixSub(MOD_NAME, SUBID, ID);
 				$display("obtained routing info (port %g)", table_data);
 
 			end else if (state == ST_BUF) begin
@@ -147,7 +148,7 @@ module rx (
 
 				flit_counter <= flit_counter + 1;
 				MEM_BUF[flit_counter] = REG_FLIT;
-				DT.printPrefix(MOD_NAME, ID);
+				DT.printPrefixSub(MOD_NAME, SUBID, ID);
 				$display("stored flit in buffer[%g]", flit_counter);
 
 				// determine next state
@@ -171,7 +172,7 @@ module rx (
 						state <= ST_IDLE;
 						ch_ack <= ~ch_ack;
 						flit_counter <= 0;
-						DT.printPrefix(MOD_NAME, ID);
+						DT.printPrefixSub(MOD_NAME, SUBID, ID);
 						$display("destroyed packet <0x%h>", {
 							MEM_BUF[7],
 							MEM_BUF[6],
@@ -191,7 +192,7 @@ module rx (
 						sw_req <= 1;
 						state <= ST_CH_WAIT;
 
-						DT.printPrefix(MOD_NAME, ID);
+						DT.printPrefixSub(MOD_NAME, SUBID, ID);
 						$display("assembled packet <0x%h>", {
 							MEM_BUF[7],
 							MEM_BUF[6],
@@ -203,7 +204,7 @@ module rx (
 							MEM_BUF[0]
 						});
 
-						DT.printPrefix(MOD_NAME, ID);
+						DT.printPrefixSub(MOD_NAME, SUBID, ID);
 						$display("requesting allocation (port %g)", REG_OUT_PORT);
 
 					end
@@ -216,7 +217,7 @@ module rx (
 
 					sw_req <= 0;
 					state <= ST_SEND;
-					DT.printPrefix(MOD_NAME, ID);
+					DT.printPrefixSub(MOD_NAME, SUBID, ID);
 					$display("granted outgoing port");
 
 				end
@@ -228,7 +229,7 @@ module rx (
 					state <= ST_IDLE;
 					ch_ack <= ~ch_ack;
 					flit_counter <= 0;
-					DT.printPrefix(MOD_NAME, ID);
+					DT.printPrefixSub(MOD_NAME, SUBID, ID);
 					$display("sending complete");
 
 				end

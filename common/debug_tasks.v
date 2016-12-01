@@ -13,6 +13,17 @@ module DebugTasks();
 		end
 	endtask
 
+	task printPrefixSub;
+		input [800:0] modName; // max chars = 100
+		input [7:0] ID;
+		input [7:0] SUBID;
+		begin
+			$write("#%6d", $time);
+			$write(", ");
+			$write("%11s [%1d] [%1d] : ", modName, ID, SUBID);
+		end
+	endtask
+
 endmodule
 
 `endif
