@@ -17,7 +17,7 @@ module testbench();
 
 	// simulation control
 
-	localparam DURATION = 500; // duration of simulation (time units)
+	localparam DURATION = 5000; // duration of simulation (time units)
 
 	initial begin
 		#DURATION $finish;
@@ -26,6 +26,16 @@ module testbench();
 	wire clk, reset;
 
 	generator u1 (clk, reset);
+
+	// internal nets
+
+	wire [PORTS-1:0] rx_ch_req;
+	wire [PORTS-1:0] rx_ch_ack;
+	wire [SIZE*PORTS-1:0] rx_ch_data;
+
+	wire [PORTS-1:0] tx_ch_req;
+	wire [PORTS-1:0] tx_ch_ack;
+	wire [SIZE*PORTS-1:0] tx_ch_data;
 
 	// routing table:
 
@@ -40,6 +50,10 @@ module testbench();
 		default    : table_data = 4;
 	endcase
 
+	// variables
+
+	genvar i;
+
 	// router
 
 	router #(
@@ -51,9 +65,70 @@ module testbench();
 		reset,
 		clk,
 		table_addr,
-		table_data
+		table_data,
+		rx_ch_req,
+		rx_ch_ack,
+		rx_ch_data,
+		tx_ch_req,
+		tx_ch_ack,
+		tx_ch_data,
+		ready
 	);
 
+	// sources
 
+	generate
+
+		for (i=0; i<PORTS; i=i+1) begin
+
+			wire [SIZE-1:0] rx_ch_flit;
+
+			localparam MSB = SIZE * (i+1) - 1;
+			localparam LSB = SIZE * i;
+
+			assign rx_ch_data[MSB:LSB] = rx_ch_flit;
+
+			packet_source #(
+				.ID(i),
+				.FLITS(8),
+				.SIZE(SIZE),
+				.SEED(i + SEED)
+			) s1 (
+				clk,
+				reset | ~ready,
+				rx_ch_req[i],
+				rx_ch_ack[i],
+				rx_ch_flit
+			);
+
+		end
+
+	endgenerate
+
+	// sinks
+
+	generate
+
+		for (i=0; i<PORTS; i=i+1) begin
+
+			wire [SIZE-1:0] tx_ch_flit;
+
+			localparam MSB = SIZE * (i+1) - 1;
+			localparam LSB = SIZE * i;
+
+			packet_sink #(
+				.ID(i),
+				.PORT_BITS(PORT_BITS)
+			) u4 (
+				clk,
+				reset,
+				tx_ch_req[i],
+				tx_ch_data[MSB:LSB],
+				tx_ch_ack[i]
+			);
+
+		end
+
+	endgenerate
 
 endmodule

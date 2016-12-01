@@ -92,10 +92,17 @@ module packet_source (clk, reset, req, ack, data);
 				$display("received ack");
 
 				if (~more_flits) begin
-					packet_counter <= packet_counter + 1;
-					flit_counter <= 0;
-					DT.printPrefix("Packet Source", ID);
-					$display("sending new packet");
+
+					flit_counter = 0;
+					packet_counter = packet_counter + 1;
+
+					if (more_packets) begin
+						DT.printPrefix("Packet Source", ID);
+						$display("sending new packet");
+					end else begin
+						DT.printPrefix("Packet Source", ID);
+						$display("finished sending all packets");
+					end
 
 				end
 

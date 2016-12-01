@@ -8,7 +8,19 @@
 `include "arbiter.v"
 `include "debug_tasks.v"
 
-module router (reset, clk, table_addr, table_data);
+module router (
+		reset,
+		clk,
+		table_addr,
+		table_data,
+		rx_ch_req,
+		rx_ch_ack,
+		rx_ch_data,
+		tx_ch_req,
+		tx_ch_ack,
+		tx_ch_data,
+		ready
+	);
 
 	// parameters
 
@@ -24,17 +36,27 @@ module router (reset, clk, table_addr, table_data);
 
 	DebugTasks DT();
 
-	// inputs and output
+	// basic inputs/outputs
 
 	input reset, clk;
+
+	// routing table interface:
+
 	input [PORT_BITS-1:0] table_data;
 	output reg [DEST_BITS-1:0] table_addr;
+	output reg ready; // high when internal routing tables are loaded
 
 	// rx channel interface:
 
-	wire rx_ch_req [PORTS-1:0];
-	wire rx_ch_ack [PORTS-1:0];
-	wire [7:0] rx_ch_flit [PORTS-1:0];
+	input  [PORTS-1:0] rx_ch_req;
+	output [PORTS-1:0] rx_ch_ack;
+	input [PORTS*SIZE-1:0] rx_ch_data;
+
+	// tx channel interface:
+
+	output [PORTS-1:0] tx_ch_req;
+	input [PORTS-1:0] tx_ch_ack;
+	output [PORTS*SIZE-1:0] tx_ch_data;
 
 	// switch interface:
 
@@ -46,12 +68,6 @@ module router (reset, clk, table_addr, table_data);
 
 	reg [2:0] rx_buf_addr [PORTS-1:0];
 	wire [7:0] rx_buf_data [PORTS-1:0];
-
-	// tx channel interface:
-
-	wire [PORTS-1:0] tx_ch_req;
-	wire [PORTS-1:0] tx_ch_ack;
-	wire [7:0] tx_ch_flit [PORTS-1:0];
 
 	// arbiters:
 
@@ -67,7 +83,6 @@ module router (reset, clk, table_addr, table_data);
 	// internal routing tables:
 
 	reg [PORT_BITS-1:0] int_table [DESTS-1:0];
-	reg tables_ready;
 
 	// routing table preloading
 
@@ -81,20 +96,20 @@ module router (reset, clk, table_addr, table_data);
 				int_table[j] <= 0;
 
 			table_addr <= 0;
-			tables_ready <= 0;
+			ready <= 0;
 
 		end else begin : BLOCK3
 
 			integer i;
 
-			if (!tables_ready) begin
+			if (!ready) begin
 
 				int_table[table_addr] = table_data;
 
 				table_addr = table_addr + 1;
 
 				if (table_addr == 0) begin
-					tables_ready = 1;
+					ready = 1;
 					DT.printPrefix("Router", 0);
 					$display("populated internal routing tables");
 				end
@@ -113,18 +128,8 @@ module router (reset, clk, table_addr, table_data);
 
 		for (i=0; i<PORTS; i=i+1) begin: BLOCK1
 
-			packet_source #(
-				.ID(i),
-				.FLITS(8),
-				.SIZE(SIZE),
-				.SEED(i + SEED)
-			) s1 (
-				clk,
-				reset | ~tables_ready,
-				rx_ch_req[i],
-				rx_ch_ack[i],
-				rx_ch_flit[i]
-			);
+			localparam MSB = SIZE * (i+1) - 1;
+			localparam LSB = SIZE * i;
 
 			// routing table interface:
 			wire [DEST_BITS-1:0] rx_table_addr;
@@ -137,7 +142,7 @@ module router (reset, clk, table_addr, table_data);
 				clk,
 				reset,
 				rx_ch_req[i],
-				rx_ch_flit[i],
+				rx_ch_data[MSB:LSB],
 				rx_ch_ack[i],
 				rx_sw_req[i],
 				rx_sw_chnl[i],
@@ -171,7 +176,7 @@ module router (reset, clk, table_addr, table_data);
 				.clk(clk),
 				.reset(reset),
 				.ch_req(tx_ch_req[i]),
-				.ch_flit(tx_ch_flit[i]),
+				.ch_flit(tx_ch_data[MSB:LSB]),
 				.ch_ack(tx_ch_ack[i]),
 				.sw_req(tx_sw_req[i]),
 				.sw_gnt(tx_sw_ack[i]),
@@ -179,16 +184,6 @@ module router (reset, clk, table_addr, table_data);
 				.buf_data(tx_buf_data[i])
 			);
 
-			packet_sink #(
-				.ID(i),
-				.PORT_BITS(PORT_BITS)
-			) u4 (
-				clk,
-				reset,
-				tx_ch_req[i],
-				tx_ch_flit[i],
-				tx_ch_ack[i]
-			);
 
 		end
 
@@ -233,7 +228,7 @@ module router (reset, clk, table_addr, table_data);
 
 				chnl = rx_sw_chnl[j];
 
-				arb_reqs_in[i][j] = (chnl == i) ? (rx_sw_req[j] & tables_ready) : 0;
+				arb_reqs_in[i][j] = (chnl == i) ? (rx_sw_req[j] & ready) : 0;
 
 				// for verbose debugging
 				// DT.printPrefix("Router", 0);

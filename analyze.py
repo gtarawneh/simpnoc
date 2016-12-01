@@ -24,10 +24,11 @@ def main():
 	count = lambda isFun : len([p for p in packets if isFun(p)])
 	initiated = count(isInit)
 	correct = count(isTranCorrect)
+	percCorrect = 100.0*correct/initiated if correct else 0
 	ghost = count(isGhost)
 	print json.dumps(hist, indent=4)
 	print "Initiated Packets     : %d" % initiated
-	print "Transferred correctly : %d (%1.1f%%)" % (correct, 100.0*correct/initiated)
+	print "Transferred correctly : %d (%1.1f%%)" % (correct, percCorrect)
 	print "Ghost Packets         : %d" % ghost
 
 def isInit(packet):
