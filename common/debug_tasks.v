@@ -9,7 +9,7 @@ module DebugTasks();
 		begin
 			$write("#%6d", $time);
 			$write(", ");
-			$write("%15s [%1d] : ", modName, ID);
+			$write("%15s [%2d] : ", modName, ID);
 		end
 	endtask
 
@@ -20,9 +20,23 @@ module DebugTasks();
 		begin
 			$write("#%6d", $time);
 			$write(", ");
-			$write("%11s [%1d] [%1d] : ", modName, ID, SUBID);
+			$write("%11s [%1d] [%2d] : ", modName, SUBID, ID);
 		end
 	endtask
+
+	task printPrefixSubCond;
+		input [800:0] modName; // max chars = 100
+		input [7:0] ID;
+		input [7:0] SUBID;
+		input COND;
+		begin
+			if (COND)
+				printPrefix(modName, ID);
+			else
+				printPrefixSub(modName, ID, SUBID);
+		end
+	endtask
+
 
 endmodule
 

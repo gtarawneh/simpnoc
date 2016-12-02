@@ -3,7 +3,7 @@
 	[
 		{
 			"path": ".",
-			"folder_exclude_patterns": ["build", "output", "diagrams"],
+			"folder_exclude_patterns": ["build", "output", "diagrams", "src", "gen"],
 		}
 	]
 }

@@ -16,9 +16,9 @@ module packet_sink (
 	parameter ID = 0;
 	parameter SIZE = 8; // flit size (bits)
 	parameter BUFF_BITS = 3; // buffer address bits
-	parameter PORT_BITS = 3;
 
-	localparam DESTINATION_BITS = 8; // don't care
+	localparam PORT_BITS = 3; // don't care
+	localparam DEST_BITS = 8; // don't care
 	localparam FLIT_COUNT = 2 ** BUFF_BITS;
 
 	// inputs:
@@ -44,7 +44,7 @@ module packet_sink (
 
 	// routing table interface:
 
-	wire [DESTINATION_BITS-1:0] table_addr;
+	wire [DEST_BITS-1:0] table_addr;
 	wire [PORT_BITS-1:0] table_data = 0;
 
 	// RX instance
@@ -53,7 +53,7 @@ module packet_sink (
 		.SIZE(SIZE),
 		.BUFF_BITS(BUFF_BITS),
 		.PORT_BITS(PORT_BITS),
-		.DESTINATION_BITS(DESTINATION_BITS),
+		.DEST_BITS(DEST_BITS),
 		.MOD_NAME("Packet Sink"),
 		.ID(ID),
 		.SINK_PACKETS(1)

@@ -11,21 +11,20 @@
 module router (
 		reset,
 		clk,
+		rx_req,
+		rx_ack,
+		rx_data,
+		tx_req,
+		tx_ack,
+		tx_data,
 		table_addr,
 		table_data,
-		rx_ch_req,
-		rx_ch_ack,
-		rx_ch_data,
-		tx_ch_req,
-		tx_ch_ack,
-		tx_ch_data,
 		ready
 	);
 
 	// parameters
 
 	parameter ID = 0;
-	parameter SEED = 5;
 	parameter PORTS = 5;
 	parameter PORT_BITS = 8;
 	parameter SIZE = 8;
@@ -49,15 +48,15 @@ module router (
 
 	// rx channel interface:
 
-	input  [PORTS-1:0] rx_ch_req;
-	output [PORTS-1:0] rx_ch_ack;
-	input [PORTS*SIZE-1:0] rx_ch_data;
+	input  [PORTS-1:0] rx_req;
+	output [PORTS-1:0] rx_ack;
+	input [PORTS*SIZE-1:0] rx_data;
 
 	// tx channel interface:
 
-	output [PORTS-1:0] tx_ch_req;
-	input [PORTS-1:0] tx_ch_ack;
-	output [PORTS*SIZE-1:0] tx_ch_data;
+	output [PORTS-1:0] tx_req;
+	input [PORTS-1:0] tx_ack;
+	output [PORTS*SIZE-1:0] tx_data;
 
 	// switch interface:
 
@@ -111,7 +110,7 @@ module router (
 
 				if (table_addr == 0) begin
 					ready = 1;
-					DT.printPrefix("Router", 0);
+					DT.printPrefix("Router", ID);
 					$display("populated internal routing tables");
 				end
 
@@ -143,9 +142,9 @@ module router (
 			) u2 (
 				clk,
 				reset,
-				rx_ch_req[i],
-				rx_ch_data[MSB:LSB],
-				rx_ch_ack[i],
+				rx_req[i],
+				rx_data[MSB:LSB],
+				rx_ack[i],
 				rx_sw_req[i],
 				rx_sw_chnl[i],
 				rx_sw_ack[i],
@@ -182,9 +181,9 @@ module router (
 			) u3 (
 				.clk(clk),
 				.reset(reset),
-				.ch_req(tx_ch_req[i]),
-				.ch_flit(tx_ch_data[MSB:LSB]),
-				.ch_ack(tx_ch_ack[i]),
+				.ch_req(tx_req[i]),
+				.ch_flit(tx_data[MSB:LSB]),
+				.ch_ack(tx_ack[i]),
 				.sw_req(tx_sw_req[i]),
 				.sw_gnt(tx_sw_ack[i]),
 				.buf_addr(tx_buf_addr[i]),
@@ -215,7 +214,7 @@ module router (
 				rx_sw_ack[j] = arb_acks_in[chnl][j];
 
 				// for verbose debugging
-				// DT.printPrefix("Router", 0);
+				// DT.printPrefix("Router", ID);
 				// $display("made connection: RX %g <--ack(%g)--- arbiter %g", j, rx_sw_ack[j], chnl);
 
 			end
@@ -238,7 +237,7 @@ module router (
 				arb_reqs_in[i][j] = (chnl == i) ? (rx_sw_req[j] & ready) : 0;
 
 				// for verbose debugging
-				// DT.printPrefix("Router", 0);
+				// DT.printPrefix("Router", ID);
 				// $display("made connection: RX %g ---req(%g)--> arbiter %g", j, arb_reqs_in[i][j], chnl);
 
 			end
@@ -255,7 +254,7 @@ module router (
 				tx_buf_data[i] = rx_buf_data[selected[i]];
 
 				if (arb_active[i]) begin
-					DT.printPrefix("Router", 0);
+					DT.printPrefix("Router", ID);
 					$display("made connection: RX %g ---dat(0x%h)--> TX %g", selected[i], tx_buf_data[i], i);
 				end
 
@@ -281,7 +280,7 @@ module router (
 
 						rx_buf_addr[i] = tx_buf_addr[k];
 						found = 1;
-						DT.printPrefix("Router", 0);
+						DT.printPrefix("Router", ID);
 						$display("made connection: RX %g <--adr(0x%02h)--- TX %g", i, tx_buf_addr[k], k);
 
 					end

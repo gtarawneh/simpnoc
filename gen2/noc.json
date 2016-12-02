@@ -1,0 +1,294 @@
+{
+    "router_00": {
+        "class": "router", 
+        "connections": {
+            "bottom": {
+                "port": "local", 
+                "to": "sink_bottom_0"
+            }, 
+            "left": {
+                "port": "local", 
+                "to": "sink_left_0"
+            }, 
+            "local": {
+                "port": "local", 
+                "to": "sink_00"
+            }, 
+            "right": {
+                "port": "left", 
+                "to": "router_01"
+            }, 
+            "top": {
+                "port": "bottom", 
+                "to": "router_02"
+            }
+        }, 
+        "table": {
+            "0": "local", 
+            "1": "right", 
+            "2": "top", 
+            "3": "right", 
+            "default": "local"
+        }
+    }, 
+    "router_01": {
+        "class": "router", 
+        "connections": {
+            "bottom": {
+                "port": "local", 
+                "to": "sink_bottom_1"
+            }, 
+            "left": {
+                "port": "right", 
+                "to": "router_00"
+            }, 
+            "local": {
+                "port": "local", 
+                "to": "sink_01"
+            }, 
+            "right": {
+                "port": "local", 
+                "to": "sink_right_0"
+            }, 
+            "top": {
+                "port": "bottom", 
+                "to": "router_03"
+            }
+        }, 
+        "table": {
+            "0": "left", 
+            "1": "local", 
+            "2": "left", 
+            "3": "top", 
+            "default": "local"
+        }
+    }, 
+    "router_02": {
+        "class": "router", 
+        "connections": {
+            "bottom": {
+                "port": "top", 
+                "to": "router_00"
+            }, 
+            "left": {
+                "port": "local", 
+                "to": "sink_left_1"
+            }, 
+            "local": {
+                "port": "local", 
+                "to": "sink_02"
+            }, 
+            "right": {
+                "port": "left", 
+                "to": "router_03"
+            }, 
+            "top": {
+                "port": "local", 
+                "to": "sink_top_0"
+            }
+        }, 
+        "table": {
+            "0": "bottom", 
+            "1": "right", 
+            "2": "local", 
+            "3": "right", 
+            "default": "local"
+        }
+    }, 
+    "router_03": {
+        "class": "router", 
+        "connections": {
+            "bottom": {
+                "port": "top", 
+                "to": "router_01"
+            }, 
+            "left": {
+                "port": "right", 
+                "to": "router_02"
+            }, 
+            "local": {
+                "port": "local", 
+                "to": "sink_03"
+            }, 
+            "right": {
+                "port": "local", 
+                "to": "sink_right_1"
+            }, 
+            "top": {
+                "port": "local", 
+                "to": "sink_top_1"
+            }
+        }, 
+        "table": {
+            "0": "left", 
+            "1": "bottom", 
+            "2": "left", 
+            "3": "local", 
+            "default": "local"
+        }
+    }, 
+    "sink_00": {
+        "address": "0", 
+        "class": "sink"
+    }, 
+    "sink_01": {
+        "address": "1", 
+        "class": "sink"
+    }, 
+    "sink_02": {
+        "address": "2", 
+        "class": "sink"
+    }, 
+    "sink_03": {
+        "address": "3", 
+        "class": "sink"
+    }, 
+    "sink_bottom_0": {
+        "address": "6", 
+        "class": "sink"
+    }, 
+    "sink_bottom_1": {
+        "address": "7", 
+        "class": "sink"
+    }, 
+    "sink_left_0": {
+        "address": "8", 
+        "class": "sink"
+    }, 
+    "sink_left_1": {
+        "address": "9", 
+        "class": "sink"
+    }, 
+    "sink_right_0": {
+        "address": "10", 
+        "class": "sink"
+    }, 
+    "sink_right_1": {
+        "address": "11", 
+        "class": "sink"
+    }, 
+    "sink_top_0": {
+        "address": "4", 
+        "class": "sink"
+    }, 
+    "sink_top_1": {
+        "address": "5", 
+        "class": "sink"
+    }, 
+    "source_00": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "local", 
+                "to": "router_00"
+            }
+        }
+    }, 
+    "source_01": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "local", 
+                "to": "router_01"
+            }
+        }
+    }, 
+    "source_02": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "local", 
+                "to": "router_02"
+            }
+        }
+    }, 
+    "source_03": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "local", 
+                "to": "router_03"
+            }
+        }
+    }, 
+    "source_bottom_0": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "bottom", 
+                "to": "router_00"
+            }
+        }, 
+        "packets": 0
+    }, 
+    "source_bottom_1": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "bottom", 
+                "to": "router_01"
+            }
+        }, 
+        "packets": 0
+    }, 
+    "source_left_0": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "left", 
+                "to": "router_00"
+            }
+        }, 
+        "packets": 0
+    }, 
+    "source_left_1": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "left", 
+                "to": "router_02"
+            }
+        }, 
+        "packets": 0
+    }, 
+    "source_right_0": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "right", 
+                "to": "router_01"
+            }
+        }, 
+        "packets": 0
+    }, 
+    "source_right_1": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "right", 
+                "to": "router_03"
+            }
+        }, 
+        "packets": 0
+    }, 
+    "source_top_0": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "top", 
+                "to": "router_02"
+            }
+        }, 
+        "packets": 0
+    }, 
+    "source_top_1": {
+        "class": "source", 
+        "connections": {
+            "0": {
+                "port": "top", 
+                "to": "router_03"
+            }
+        }, 
+        "packets": 0
+    }
+}
