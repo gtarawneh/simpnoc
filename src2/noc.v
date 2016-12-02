@@ -4,7 +4,7 @@
 `include "packet_sink.v"
 `include "connector.v"
 
-module noc (input clk, input reset);
+module noc (input clk, input reset, output done);
 
 	`include "gen_params.v"
 	`include "wires.v"

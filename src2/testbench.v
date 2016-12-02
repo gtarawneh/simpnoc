@@ -4,16 +4,14 @@
 
 module testbench();
 
-	localparam DURATION = 2600; // duration of simulation (time units)
+	localparam PAD_DELAY = 0; // cycles to simulate after all packets sent
 
-	initial begin
-		#DURATION $finish;
-	end
+	always @(done) if (done) #PAD_DELAY $finish;
 
-	wire clk, reset;
+	wire clk, reset, done;
 
 	generator u1 (clk, reset);
 
-	noc n1 (clk, reset);
+	noc n1 (clk, reset, done);
 
 endmodule

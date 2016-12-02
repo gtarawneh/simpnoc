@@ -45,7 +45,7 @@ module packet_source (clk, reset, req, ack, data, done);
 			packet_counter <= 0;
 			ack_old <= 0;
 			busy <= 0;
-			done <= 0;
+			done <= (PACKETS == 0);
 
 		end else begin
 
