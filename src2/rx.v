@@ -1,6 +1,7 @@
 `ifndef _inc_rx_
 `define _inc_rx_
 
+`include "synchronizer.v"
 `include "debug_tasks.v"
 
 module rx (
@@ -87,7 +88,12 @@ module rx (
 
 	// internal nets:
 
-	wire req = (ch_req ^ ch_req_old);
+	wire ch_req_sync;
+	wire req = (ch_req_sync ^ ch_req_old);
+
+	// synchronizer
+
+	synchronizer s1 (clk, reset, ch_req, ch_req_sync);
 
 	// flit parts (internal nets):
 
@@ -250,7 +256,7 @@ module rx (
 
 		end else begin
 
-			ch_req_old <= ch_req;
+			ch_req_old <= ch_req_sync;
 
 		end
 
