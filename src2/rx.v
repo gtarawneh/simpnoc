@@ -84,7 +84,7 @@ module rx (
 	reg [PORT_BITS-1:0] REG_OUT_PORT;
 	reg [7:0] flit_counter;
 	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
-	reg [9:0] rand;
+	reg [9:0] ranNum;
 
 	// individual flip-flops:
 
@@ -122,23 +122,29 @@ module rx (
 			for (i=0; i<FLITS; i=i+1)
 				MEM_BUF[i] <= 0;
 
-			available <= 0;
-			rand <= 0;
+			available <= 1;
+			ranNum <= 0;
+			ch_req_old <= 0;
 
 		end else begin
 
-			rand <= $urandom(seed);
+			if (state == ST_IDLE && req) begin
 
-			available <= (SINK_PACKETS == 0) | (rand < SINK_RATE);
+				ranNum = $urandom(seed);
+				available = (SINK_PACKETS == 0) | (ranNum < SINK_RATE);
 
-			if (state == ST_IDLE && req && available) begin
+				if (available) begin
 
-				state <= ST_LATCHED;
-				REG_FLIT <= ch_flit;
+					state = ST_LATCHED;
+					REG_FLIT = ch_flit;
 
-				if (VERBOSE_DEBUG) begin
-					DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-					$display("req arrived, latched flit <0x%h>", ch_flit);
+					if (VERBOSE_DEBUG) begin
+						DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+						$display("req arrived, latched flit <0x%h>", ch_flit);
+					end
+
+					ch_req_old <= ch_req_sync;
+
 				end
 
 			end else if (state == ST_LATCHED) begin
@@ -271,22 +277,6 @@ module rx (
 				end
 
 			end
-
-		end
-
-	end
-
-	// house keeping:
-
-	always @(posedge clk or posedge reset) begin
-
-		if (reset) begin
-
-			ch_req_old <= 0;
-
-		end else begin
-
-			ch_req_old <= ch_req_sync;
 
 		end
 
