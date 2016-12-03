@@ -36,7 +36,7 @@ def main():
 	print "Transferred correctly         : %d (%1.1f%%)" % (correct, percCorrect)
 	print "Ghost Packets                 : %d" % ghost
 	print "Mean routers crossed / packet : %1.3f" % meanHops
-	print "Mean delivery time (cycles)   : %1.0f" % meanDeliveryTime
+	print "Mean delivery time (cycles)   : %1.1f" % meanDeliveryTime
 
 def getPacketTransferStats(packets):
 	hops = []

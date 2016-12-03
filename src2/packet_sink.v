@@ -16,6 +16,9 @@ module packet_sink (
 	parameter ID = 0;
 	parameter SIZE = 8; // flit size (bits)
 	parameter BUFF_BITS = 3; // buffer address bits
+	parameter SINK_RATE = 1024; // max 1024
+	parameter SEED = 1; // for random sinking
+	parameter VERBOSE_DEBUG = 1;
 
 	localparam PORT_BITS = 3; // don't care
 	localparam DEST_BITS = 8; // don't care
@@ -56,7 +59,10 @@ module packet_sink (
 		.DEST_BITS(DEST_BITS),
 		.MOD_NAME("Packet Sink"),
 		.ID(ID),
-		.SINK_PACKETS(1)
+		.SINK_PACKETS(1),
+		.SEED(SEED),
+		.SINK_RATE(SINK_RATE),
+		.VERBOSE_DEBUG(VERBOSE_DEBUG)
 	) u2 (
 		clk,
 		reset,

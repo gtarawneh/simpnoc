@@ -12,6 +12,7 @@ module packet_source (clk, reset, req, ack, data, done);
 	parameter SIZE = 8;
 	parameter SEED = 1;
 	parameter PACKETS = 2; // max 255
+	parameter VERBOSE_DEBUG = 1;
 
 	// debugging modules
 
@@ -86,15 +87,19 @@ module packet_source (clk, reset, req, ack, data, done);
 				busy <= 1;
 				flit_counter <= flit_counter + 1;
 
-				DT.printPrefix("Packet Source", ID);
-				$display("sending <0x%h>", MEM_BUF[flit_counter]);
+				if (VERBOSE_DEBUG) begin
+					DT.printPrefix("Packet Source", ID);
+					$display("sending <0x%h>", MEM_BUF[flit_counter]);
+				end
 
 			end else if (busy & ack_received) begin
 
 				busy <= 0;
 
-				DT.printPrefix("Packet Source", ID);
-				$display("received ack");
+				if (VERBOSE_DEBUG) begin
+					DT.printPrefix("Packet Source", ID);
+					$display("received ack");
+				end
 
 				if (~more_flits) begin
 
@@ -103,14 +108,19 @@ module packet_source (clk, reset, req, ack, data, done);
 
 					if (more_packets) begin
 
-						DT.printPrefix("Packet Source", ID);
-						$display("sending new packet");
+						if (VERBOSE_DEBUG) begin
+							DT.printPrefix("Packet Source", ID);
+							$display("sending new packet");
+						end
 
 					end else begin
 
 						done <= 1;
-						DT.printPrefix("Packet Source", ID);
-						$display("finished sending all packets");
+
+						if (VERBOSE_DEBUG) begin
+							DT.printPrefix("Packet Source", ID);
+							$display("finished sending all packets");
+						end
 
 					end
 

@@ -28,6 +28,7 @@ module router (
 	parameter PORTS = 5;
 	parameter PORT_BITS = 8;
 	parameter SIZE = 8;
+	parameter VERBOSE_DEBUG = 1;
 
 	localparam DEST_BITS = SIZE - 1;
 	localparam DESTS = 2 ** DEST_BITS; // destinations
@@ -109,9 +110,14 @@ module router (
 				table_addr = table_addr + 1;
 
 				if (table_addr == 0) begin
+
 					ready = 1;
-					DT.printPrefix("Router", ID);
-					$display("populated internal routing tables");
+
+					if (VERBOSE_DEBUG) begin
+						DT.printPrefix("Router", ID);
+						$display("populated internal routing tables");
+					end
+
 				end
 
 			end
@@ -138,7 +144,8 @@ module router (
 			rx #(
 				.ID(ID),
 				.SUBID(i),
-				.PORT_BITS(PORT_BITS)
+				.PORT_BITS(PORT_BITS),
+				.VERBOSE_DEBUG(VERBOSE_DEBUG)
 			) u2 (
 				clk,
 				reset,
@@ -162,7 +169,8 @@ module router (
 				.ID(ID),
 				.SUBID(i),
 				.PORTS(PORTS),
-				.PORT_BITS(PORT_BITS)
+				.PORT_BITS(PORT_BITS),
+				.VERBOSE_DEBUG(VERBOSE_DEBUG)
 			) a1 (
 				.clk(clk),
 				.reset(reset),
@@ -177,7 +185,8 @@ module router (
 			tx #(
 				.ID(ID),
 				.SUBID(i),
-				.SIZE(SIZE)
+				.SIZE(SIZE),
+				.VERBOSE_DEBUG(VERBOSE_DEBUG)
 			) u3 (
 				.clk(clk),
 				.reset(reset),
@@ -253,7 +262,7 @@ module router (
 
 				tx_buf_data[i] = rx_buf_data[selected[i]];
 
-				if (arb_active[i]) begin
+				if (arb_active[i] && VERBOSE_DEBUG) begin
 					DT.printPrefix("Router", ID);
 					$display("made connection: RX %g ---dat(0x%h)--> TX %g", selected[i], tx_buf_data[i], i);
 				end
@@ -280,8 +289,11 @@ module router (
 
 						rx_buf_addr[i] = tx_buf_addr[k];
 						found = 1;
-						DT.printPrefix("Router", ID);
-						$display("made connection: RX %g <--adr(0x%02h)--- TX %g", i, tx_buf_addr[k], k);
+
+						if (VERBOSE_DEBUG) begin
+							DT.printPrefix("Router", ID);
+							$display("made connection: RX %g <--adr(0x%02h)--- TX %g", i, tx_buf_addr[k], k);
+						end
 
 					end
 

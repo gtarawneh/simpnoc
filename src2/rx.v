@@ -27,9 +27,12 @@ module rx (
 	parameter SUBID = 0;
 	parameter MOD_NAME = "RX";
 	parameter SINK_PACKETS = 0;
+	parameter SINK_RATE = 1024; // max 1024
 	parameter SIZE = 8; // flit size (bits)
 	parameter BUFF_BITS = 3; // buffer address bits
 	parameter PORT_BITS = 8; // bits to designate requested output port
+	parameter SEED = 1; // for random sinking
+	parameter VERBOSE_DEBUG = 1;
 
 	localparam DEST_BITS = SIZE-1; // bits to designate requested destination
 	localparam FLITS = 2 ** BUFF_BITS;
@@ -81,6 +84,7 @@ module rx (
 	reg [PORT_BITS-1:0] REG_OUT_PORT;
 	reg [7:0] flit_counter;
 	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
+	reg [9:0] rand;
 
 	// individual flip-flops:
 
@@ -90,6 +94,7 @@ module rx (
 
 	wire ch_req_sync;
 	wire req = (ch_req_sync ^ ch_req_old);
+	reg available;
 
 	// synchronizer
 
@@ -102,6 +107,7 @@ module rx (
 	// main body:
 
 	integer i;
+	integer seed = SEED;
 
 	always @(posedge clk or posedge reset) begin
 
@@ -116,37 +122,50 @@ module rx (
 			for (i=0; i<FLITS; i=i+1)
 				MEM_BUF[i] <= 0;
 
+			available <= 0;
+			rand <= 0;
+
 		end else begin
 
-			if (state == ST_IDLE && req) begin
+			rand <= $urandom(seed);
+
+			available <= (SINK_PACKETS == 0) | (rand < SINK_RATE);
+
+			if (state == ST_IDLE && req && available) begin
 
 				state <= ST_LATCHED;
 				REG_FLIT <= ch_flit;
-				DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-				$display("req arrived, latched flit <0x%h>", ch_flit);
+
+				if (VERBOSE_DEBUG) begin
+					DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+					$display("req arrived, latched flit <0x%h>", ch_flit);
+				end
 
 			end else if (state == ST_LATCHED) begin
 
-				if (head_flit) begin
-					DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-					$display("flit decoded: head");
-				end else begin
-					DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-					$display("flit decoded: body");
+				if (VERBOSE_DEBUG) begin
+					if (head_flit) begin
+						DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+						$display("flit decoded: head");
+					end else begin
+						DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+						$display("flit decoded: body");
+					end
 				end
-
 				state <= head_flit ? ST_RC : ST_BUF;
 
 				if (head_flit)
-					table_addr <= REG_FLIT[1:0];
+					table_addr <= REG_FLIT[3:0];
 
 			end else if (state == ST_RC) begin
 
 				REG_OUT_PORT <= table_data;
 				state <= ST_BUF;
 
-				DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-				$display("obtained routing info (port %g)", table_data);
+				if (VERBOSE_DEBUG) begin
+					DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+					$display("obtained routing info (port %g)", table_data);
+				end
 
 			end else if (state == ST_BUF) begin
 
@@ -154,8 +173,11 @@ module rx (
 
 				flit_counter <= flit_counter + 1;
 				MEM_BUF[flit_counter] = REG_FLIT;
-				DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-				$display("stored flit in buffer[%g]", flit_counter);
+
+				if (VERBOSE_DEBUG) begin
+					DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+					$display("stored flit in buffer[%g]", flit_counter);
+				end
 
 				// determine next state
 
@@ -210,8 +232,10 @@ module rx (
 							MEM_BUF[0]
 						});
 
-						DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-						$display("requesting allocation (port %g)", REG_OUT_PORT);
+						if (VERBOSE_DEBUG) begin
+							DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+							$display("requesting allocation (port %g)", REG_OUT_PORT);
+						end
 
 					end
 
@@ -223,8 +247,11 @@ module rx (
 
 					sw_req <= 0;
 					state <= ST_SEND;
-					DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-					$display("granted outgoing port");
+
+					if (VERBOSE_DEBUG) begin
+						DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+						$display("granted outgoing port");
+					end
 
 				end
 
@@ -235,8 +262,11 @@ module rx (
 					state <= ST_IDLE;
 					ch_ack <= ~ch_ack;
 					flit_counter <= 0;
-					DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
-					$display("sending complete");
+
+					if (VERBOSE_DEBUG) begin
+						DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
+						$display("sending complete");
+					end
 
 				end
 

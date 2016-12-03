@@ -12,7 +12,8 @@ def insertSource(ID, packets = None):
 			.FLITS(8),
 			.SIZE(SIZE),
 			.SEED(SEED + %ID),
-			.PACKETS(%PACKETS)
+			.PACKETS(%PACKETS),
+			.VERBOSE_DEBUG(VERBOSE_DEBUG)
 		) source_%ID (
 			clk,
 			reset | ~(&ready),
@@ -34,7 +35,11 @@ def insertSink(ID):
 
 		packet_sink #(
 			.ID(%ID),
-			.PORT_BITS(PORT_BITS)
+			.PORT_BITS(PORT_BITS),
+			.SIZE(SIZE),
+			.SINK_RATE(SINK_RATE),
+			.SEED(SEED + %ID),
+			.VERBOSE_DEBUG(VERBOSE_DEBUG)
 		) sink_%ID (
 			clk,
 			reset,
@@ -248,7 +253,8 @@ def insertRouter(routerID):
 			.ID(%ID),
 			.PORTS(PORTS),
 			.PORT_BITS(PORT_BITS),
-			.SIZE(SIZE)
+			.SIZE(SIZE),
+			.VERBOSE_DEBUG(VERBOSE_DEBUG)
 		) r%ID (
 			reset,
 			clk,
@@ -294,6 +300,8 @@ def insertParams(routerCount, sourceCount, sinkCount):
 		localparam ROUTER_COUNT = %ROUTERS;
 		localparam SINK_COUNT = %SINKS;
 		localparam SOURCE_COUNT = %SOURCES;
+		localparam SINK_RATE = 1024;
+		localparam VERBOSE_DEBUG = 0;
 	"""
 	reps = {
 		"%ROUTERS": str(routerCount),

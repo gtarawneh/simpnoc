@@ -22,6 +22,7 @@ module arbiter (
 	parameter SUBID = 0;
 	parameter PORTS = 5; // number of clients (255 max)
 	parameter PORT_BITS = 3;
+	parameter VERBOSE_DEBUG = 1;
 
 	// inputs:
 
@@ -63,8 +64,12 @@ module arbiter (
 					j = (i + selected) % PORTS;
 
 					if (reqs_in[j] == 1) begin
-						DT.printPrefixSub("Arbiter", SUBID, ID);
-						$display("start handshake (port %g)", j);
+
+						if (VERBOSE_DEBUG) begin
+							DT.printPrefixSub("Arbiter", SUBID, ID);
+							$display("start handshake (port %g)", j);
+						end
+
 						selected = j;
 						req_out = 1;
 						active = 1;
@@ -81,9 +86,14 @@ module arbiter (
 				// $display("req_out = %g, ack_out = %g", req_out, ack_out);
 
 				if (~req_out && ~ack_out) begin
-					DT.printPrefixSub("Arbiter", SUBID, ID);
-					$display("finished handshake");
+
 					active = 0;
+
+					if (VERBOSE_DEBUG) begin
+						DT.printPrefixSub("Arbiter", SUBID, ID);
+						$display("finished handshake");
+					end
+
 				end
 
 			end

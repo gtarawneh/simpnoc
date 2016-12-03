@@ -32,8 +32,8 @@ def getSerializedCoords(width, height):
 def main():
 	noc = {}
 	# noc parameters
-	width = 2
-	height = 2
+	width = 4
+	height = 4
 	# add routers
 	for x, y in getSerializedCoords(width, height):
 		isBorderLeft = x == 0

@@ -23,6 +23,7 @@ module tx (
 	parameter SUBID = 0;
 	parameter SIZE = 8; // flit size (bits)
 	parameter BUFF_BITS = 3; // buffer address bits
+	parameter VERBOSE_DEBUG = 1;
 
 	// inputs:
 
@@ -88,13 +89,17 @@ module tx (
 					state <= ST_SENDING;
 					flit_counter <= 1;
 					sw_gnt <= 1;
-					DT.printPrefixSub("TX", SUBID, ID);
-					$display("received a request to send, transmitting ...");
+
 					// initiate first handshake
 					ch_flit <= buf_data;
 					ch_req <= ~ch_req;
-					DT.printPrefixSub("TX", SUBID, ID);
-					$display("sending flit %g <0x%h>", flit_counter, buf_data);
+
+					if (VERBOSE_DEBUG) begin
+						DT.printPrefixSub("TX", SUBID, ID);
+						$display("received a request to send, transmitting ...");
+						DT.printPrefixSub("TX", SUBID, ID);
+						$display("sending flit %g <0x%h>", flit_counter, buf_data);
+					end
 
 				end
 
@@ -107,16 +112,22 @@ module tx (
 						flit_counter <= flit_counter + 1;
 						ch_flit <= buf_data;
 						ch_req <= ~ch_req;
-						DT.printPrefixSub("TX", SUBID, ID);
-						$display("sending flit %g <0x%h>", flit_counter, buf_data);
+
+						if (VERBOSE_DEBUG) begin
+							DT.printPrefixSub("TX", SUBID, ID);
+							$display("sending flit %g <0x%h>", flit_counter, buf_data);
+						end
 
 					end else begin
 
 						flit_counter = 0;
 						state <= ST_WAIT_REQ_DOWN;
 						sw_gnt <= 0;
-						DT.printPrefixSub("TX", SUBID, ID);
-						$display("end of transmission");
+
+						if (VERBOSE_DEBUG) begin
+							DT.printPrefixSub("TX", SUBID, ID);
+							$display("end of transmission");
+						end
 
 					end
 
@@ -125,9 +136,14 @@ module tx (
 			end else if (state == ST_WAIT_REQ_DOWN) begin
 
 				if (~sw_req) begin
-					DT.printPrefixSub("TX", SUBID, ID);
-					$display("returning to idle");
+
 					state <= ST_IDLE;
+
+					if (VERBOSE_DEBUG) begin
+						DT.printPrefixSub("TX", SUBID, ID);
+						$display("returning to idle");
+					end
+
 				end
 
 			end
