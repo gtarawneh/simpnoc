@@ -2,6 +2,7 @@
 
 import textwrap
 import json
+from random import randint
 
 def insertSource(ID, packets = None):
 	code = """
@@ -13,6 +14,7 @@ def insertSource(ID, packets = None):
 			.SIZE(SIZE),
 			.SEED(SEED + %ID),
 			.PACKETS(%PACKETS),
+			.SOURCE_RATE(SOURCE_RATE),
 			.VERBOSE_DEBUG(VERBOSE_DEBUG)
 		) source_%ID (
 			clk,
@@ -25,7 +27,8 @@ def insertSource(ID, packets = None):
 	"""
 	reps = {
 		"%PACKETS" : str(packets) if (packets != None) else "SRC_PACKETS",
-		"%ID" : str(ID)
+		"%ID" : str(ID),
+		"%SEED" : str(randint(0, 1e5))
 	}
 	return insertCode(code, reps)
 
@@ -290,17 +293,14 @@ def insertTable(tabID, table):
 
 def insertParams(routerCount, sourceCount, sinkCount):
 	code = """
-		localparam SEED = 5;
 		localparam PORTS = 5;
 		localparam PORT_BITS = 8;
 		localparam SIZE = 8; // flit bits
-		localparam SRC_PACKETS = 1; // packets per source
 		localparam DEST_BITS = SIZE - 1; // bits to designate requested destination
 		localparam DESTS = 2 ** DEST_BITS;
 		localparam ROUTER_COUNT = %ROUTERS;
 		localparam SINK_COUNT = %SINKS;
 		localparam SOURCE_COUNT = %SOURCES;
-		localparam SINK_RATE = 1024;
 		localparam VERBOSE_DEBUG = 0;
 	"""
 	reps = {
