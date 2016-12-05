@@ -33,6 +33,8 @@ module rx (
 	parameter PORT_BITS = 8; // bits to designate requested output port
 	parameter SEED = 1; // for random sinking
 	parameter VERBOSE_DEBUG = 1;
+	parameter METASTABILITY = 0;
+	parameter SYNC_STAGES = 0;
 
 	localparam DEST_BITS = SIZE-1; // bits to designate requested destination
 	localparam FLITS = 2 ** BUFF_BITS;
@@ -84,7 +86,19 @@ module rx (
 	reg [PORT_BITS-1:0] REG_OUT_PORT;
 	reg [7:0] flit_counter;
 	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
-	reg [9:0] ranNum;
+
+	// registers for random events
+
+	// reg [15:0] randAvailable;
+	reg [9:0] randAvailable;
+	reg [11:0] randLatchGarbage;
+	reg [11:0] randCorruptFlitCounter;
+	reg [11:0] randCorruptRC;
+
+	reg available;
+	reg latchGarbage;
+	reg corruptFlitCounter;
+	reg corruptRC;
 
 	// individual flip-flops:
 
@@ -94,11 +108,10 @@ module rx (
 
 	wire ch_req_sync;
 	wire req = (ch_req_sync ^ ch_req_old);
-	reg available;
 
 	// synchronizer
 
-	synchronizer s1 (clk, reset, ch_req, ch_req_sync);
+	synchronizer #(.STAGES(SYNC_STAGES)) s1 (clk, reset, ch_req, ch_req_sync);
 
 	// flit parts (internal nets):
 
@@ -119,24 +132,33 @@ module rx (
 			ch_ack <= 0;
 			REG_OUT_PORT <= 0;
 			table_addr <= 0;
+			ch_req_old <= 0;
 			for (i=0; i<FLITS; i=i+1)
 				MEM_BUF[i] <= 0;
 
+			randAvailable <= $urandom(seed);
+			randLatchGarbage <= $urandom(seed);
+			randCorruptFlitCounter <= $urandom(seed);
+			randCorruptRC <= $urandom(seed);
 			available <= 1;
-			ranNum <= 0;
-			ch_req_old <= 0;
+			latchGarbage <= 0;
+			corruptFlitCounter <= 0;
+			corruptRC <= 0;
 
 		end else begin
 
 			if (state == ST_IDLE && req) begin
 
-				ranNum = $urandom(seed);
-				available = (SINK_PACKETS == 0) | (ranNum < SINK_RATE);
+				randAvailable = $urandom(seed);
+				available = (SINK_PACKETS == 0) | (randAvailable < SINK_RATE);
 
 				if (available) begin
 
+					randLatchGarbage = $urandom(seed);
+					latchGarbage = METASTABILITY & (randLatchGarbage == 0);
+
 					state = ST_LATCHED;
-					REG_FLIT = ch_flit;
+					REG_FLIT = latchGarbage ? $urandom(seed) : ch_flit;
 
 					if (VERBOSE_DEBUG) begin
 						DT.printPrefixSubCond(MOD_NAME, ID, SUBID, SINK_PACKETS);
@@ -160,8 +182,11 @@ module rx (
 				end
 				state <= head_flit ? ST_RC : ST_BUF;
 
+				randCorruptRC = $urandom(seed);
+				corruptRC = METASTABILITY & (randCorruptRC == 0);
+
 				if (head_flit)
-					table_addr <= REG_FLIT[3:0];
+					table_addr <= corruptRC ? $urandom(seed) : REG_FLIT[3:0];
 
 			end else if (state == ST_RC) begin
 
@@ -177,7 +202,10 @@ module rx (
 
 				// store flit in buffer
 
-				flit_counter <= flit_counter + 1;
+				randCorruptFlitCounter = $urandom(seed);
+				corruptFlitCounter = METASTABILITY & (randCorruptFlitCounter == 0);
+
+				flit_counter <= corruptFlitCounter ? $urandom(seed) : flit_counter + 1;
 				MEM_BUF[flit_counter] = REG_FLIT;
 
 				if (VERBOSE_DEBUG) begin
