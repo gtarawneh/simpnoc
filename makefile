@@ -9,4 +9,5 @@ clean:
 	@rm -rf gen
 	@rm -rf build
 	@rm -rf output
+	@rm -rf sim
 	@echo "Project directory cleaned"

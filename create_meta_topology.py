@@ -1,6 +1,7 @@
 #!/bin/python
 
 import json
+import os
 
 def getRouterID(x, y, width, height):
 	ind = getIndex(x, y, width, height)
@@ -131,6 +132,10 @@ def main():
 			}
 
 		}
+	try:
+		os.mkdir("gen2")
+	except:
+		pass
 	with open("gen2/noc.json", "w") as fid:
 		fid.write(json.dumps(noc, indent = 4, sort_keys = True))
 

@@ -7,6 +7,7 @@
 module noc (input clk, input reset, output done);
 
 	`include "gen_params.v"
+	`include "sim_params.v"
 	`include "wires.v"
 	`include "gen_routers.v"
 	`include "gen_tables.v"

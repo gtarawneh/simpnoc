@@ -29,7 +29,7 @@ module packet_source (clk, reset, req, ack, data, done);
 	reg [SIZE-1:0] MEM_BUF [FLITS-1:0];
 	reg [7:0] flit_counter;
 	reg [7:0] packet_counter;
-	reg [9:0] ranNum;
+	reg [15:0] ranNum;
 	reg ack_old;
 	reg busy;
 	reg available; // randomized
