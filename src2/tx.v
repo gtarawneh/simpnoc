@@ -24,6 +24,7 @@ module tx (
 	parameter SIZE = 8; // flit size (bits)
 	parameter BUFF_BITS = 3; // buffer address bits
 	parameter VERBOSE_DEBUG = 1;
+	parameter SYNC_STAGES = 2;
 
 	// inputs:
 
@@ -65,9 +66,13 @@ module tx (
 
 	reg ch_ack_old;
 
+	// synchronizer
+
+	synchronizer #(.STAGES(SYNC_STAGES)) s1 (clk, reset, ch_ack, ch_ack_sync);
+
 	// internal nets:
 
-	wire ack = (ch_ack ^ ch_ack_old);
+	wire ack = (ch_ack_sync ^ ch_ack_old);
 
 	// main body:
 
@@ -162,7 +167,7 @@ module tx (
 
 		end else begin
 
-			ch_ack_old <= ch_ack;
+			ch_ack_old <= ch_ack_sync;
 
 		end
 
