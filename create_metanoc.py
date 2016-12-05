@@ -56,43 +56,6 @@ def insertSink(ID):
 	}
 	return insertCode(code, reps)
 
-def insertTerminatorTX(ID):
-	code ="""
-		// term_tx %ID
-
-		term_tx term_tx_%ID (
-			clk,
-			reset,
-			term_tx_req[%ID],
-			term_tx_data[%ID],
-			term_tx_ack[%ID]
-		);
-
-	"""
-	reps = {
-		"%ID" : str(ID),
-	}
-	return insertCode(code, reps)
-
-def insertTerminatorRX(ID):
-	code ="""
-		// term_rx %ID
-
-		term_rx term_rx_%ID (
-			clk,
-			reset,
-			term_rx_req[%ID],
-			term_rx_data[%ID],
-			term_rx_ack[%ID]
-		);
-
-	"""
-	reps = {
-		"%ID" : str(ID),
-	}
-	return insertCode(code, reps)
-
-
 def insertConnection(conInd, ind1, ind2, class1, class2, port1, port2):
 	t = (class1, class2)
 	if t == ("router", "router"):
