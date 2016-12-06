@@ -27,14 +27,15 @@ def main():
 	packets = hist.values()
 	count = lambda isFun : len([p for p in packets if isFun(p)])
 	initiated = count(isInit)
+	corrupt = count(isCorrupt)
 	correct = count(isTranCorrect)
-	percCorrect = 100.0*correct/initiated if correct else 0
-	ghost = count(isGhost)
-	# print json.dumps(hist, indent=4)
+	dropped = initiated - correct - corrupt
+	corruptPerc = 100.0 * corrupt / initiated
+	droppedPerc = 100.0 * dropped / initiated
 	meanHops,meanDeliveryTime = getPacketTransferStats(packets)
 	print "Initiated Packets             : %d" % initiated
-	print "Transferred correctly         : %d (%1.1f%%)" % (correct, percCorrect)
-	print "Ghost Packets                 : %d" % ghost
+	print "Corrupt Packets               : %d (%1.1f%%)" % (corrupt, corruptPerc)
+	print "Dropped Packets               : %d (%1.1f%%)" % (dropped, droppedPerc)
 	print "Mean routers crossed / packet : %1.3f" % meanHops
 	print "Mean delivery time (cycles)   : %1.1f" % meanDeliveryTime
 
@@ -66,7 +67,10 @@ def isDest(packet):
 def isTranCorrect(packet):
 	return isInit(packet) and isDest(packet)
 
-def isGhost(packet):
+def isCorrupt(packet):
 	return (not isInit(packet)) and isDest(packet)
+
+def isDropped(packet):
+	return isInit(packet) and (not isDest(packet))
 
 main()
